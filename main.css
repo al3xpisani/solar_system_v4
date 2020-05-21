@@ -1,0 +1,77 @@
+/* Put your styles and imports here */
+
+body {
+  font-family: sans-serif;
+  margin: 0px;
+  padding: 0px;
+  overflow: hidden;
+}
+
+#scene-container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#scene-openHelper {
+  position: absolute;
+  width: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  opacity: 0.5;
+  background-image: url("https://i.ibb.co/jvyvBW1/help-icon64.png") !important;
+}
+#scene-containerHelp {
+  position: absolute;
+  background-color: #f9f1f1;
+  width: 100%;
+  height: 30%;
+  margin: 0;
+  padding: 10px;
+  opacity: 0;
+}
+
+#formattedHelpText {
+  height: auto;
+  width: 32px;
+  padding: 20px;
+  float: left;
+
+  background-repeat: no-repeat;
+  background-image: url("https://i.ibb.co/ZJDqxsK/pngwave.png") !important;
+}
+
+#mouseHelpDescription {
+  float: left;
+  height: 90%;
+  margin-right: 40px;
+  margin-left: 40px;
+  margin-bottom: 20px;
+}
+
+#keyboardHelpDescription {
+  float: left;
+  height: 0;
+  margin-right: 40px;
+  margin-left: 40px;
+  margin-bottom: 20px;
+}
+
+#loadingScene {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #ffffff;
+  opacity: 0.7;
+
+  font-size: 28px;
+  color: #000000;
+  text-align: center;
+  vertical-align: middle;
+  line-height: calc(100vh);
+}

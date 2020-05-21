@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>UFSCar - Alexandre</title>
+    <script src="https://threejs.org/build/three.js"></script>
+    <script src="https://unpkg.com/three@0.85.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.2/dat.gui.js"></script>
+    <link rel="stylesheet" type="text/css" href="main.css" />
+  </head>
+  <body>
+    <div id="scene-container">
+      <!-- This div will hold our scene-->
+    </div>
+    <div id="scene-openHelper"></div>
+
+    <div id="scene-containerHelp">
+      <div id="formattedHelpText"></div>
+      <div>
+        <center>
+          <h2><b>Instructions how to navigate by the simulator</b></h2>
+        </center>
+      </div>
+      <div id="mouseHelpDescription">
+        Mouse button - Use buttons to rotate by the universe :) <br />
+        Mouse wheel - Use the wheel to zoom in or zoom out. <br /><br />
+        Keyboard - Type "R" to reset the camera view<br />
+        Keyboard - Type "P" to Pause or Play animation. When on Pause you can
+        rotate or zoom the scene.<br /><br />
+        Keyboard - Type "." to increase the orbit speed of the planets<br />
+        Keyboard - Type "," to decrease the orbit speed of the planets</br/><br/>
+        Scene Axis - Axis Red,Green and blue represents Axis X, Y and Z
+      </div>
+      <div id="keyboardHelpDescription">
+        Keyboard - Type "O" to play or pause the Orbits of the planets<br /><br />
+        Keyboard - Type "E" to focus on Earth. try to keep pressing "E" to
+        follow its movement<br />
+        Keyboard - Type "M" to focus on Mercury.<br />
+        Keyboard - Type "J" to focus on Jupyter.<br />
+        Keyboard - Type "U" to focus on Uranus.<br />
+        Keyboard - Type "S" to focus on Saturn.<br />
+        Keyboard - Type "N" to focus on Neptuno.<br />
+        Keyboard - Type "V" to focus on Venus<br /><br />
+      </div>
+    </div>
+
+    <div id="loadingScene">Loading animation ...</div>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
