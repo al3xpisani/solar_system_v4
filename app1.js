@@ -14,7 +14,7 @@ function MAIN() {
   let canvasOpenHelpBottom = "10px";
   let canvasOpenHelpLeft = "10px";
   //
-
+  let light;
   let camera;
   let cameraHelper;
   let controls;
@@ -51,7 +51,7 @@ function MAIN() {
   let dataControls = {
     Rotation_Speed: 0.03,
     Orbit_Speed: 0.03,
-    Stop_Animation: false
+    Stop_Animation: false,
   };
 
   //change value only for the trhee constants below
@@ -244,17 +244,14 @@ function MAIN() {
 
     //create directional light
     //These light goes in the center of the sun to shine all directions
-    const light = new THREE.PointLight(0xffffff, 2000, 365, 2);
-
+    light = new THREE.PointLight(0xffffff, 14000, 0, 2);
     //move light
     light.position.set(0, 0, SUN_INIT_POS_Z);
     light.castShadow = true; // default false
-
     light.shadow.mapSize.width = 1512; // default
     light.shadow.mapSize.height = 1512; // default
     light.shadow.camera.near = 0.5; // default
     light.shadow.camera.far = 4000; // default
-    light.shadowDarkness = 0.4;
 
     camera.add(light);
     scene.add(light);
@@ -316,7 +313,7 @@ function MAIN() {
       emissive: 0xffffff,
       emissiveMap: sunTexture,
       roughness: 1,
-      normalScale: new THREE.Vector2(4, 4)
+      normalScale: new THREE.Vector2(4, 4),
     });
     sunMesh = new THREE.Mesh(sunSphere, sunMaterial);
     sunMesh.position.set(SUN_INIT_POS_X, SUN_INIT_POS_Y, SUN_INIT_POS_Z);
@@ -336,7 +333,7 @@ function MAIN() {
         "https://i.ibb.co/2cXm7Ld/mercurybump.jpg"
       ),
       bumpScale: 0.002,
-      roughness: 1
+      roughness: 1,
     });
 
     var mercuryCenterPosition =
@@ -378,7 +375,7 @@ function MAIN() {
         "https://i.ibb.co/Gtw6t8x/venusbump.jpg"
       ),
       bumpScale: 0.002,
-      roughness: 1
+      roughness: 1,
     });
 
     venusMesh = new THREE.Mesh(venusSphere, venusMaterial);
@@ -409,7 +406,7 @@ function MAIN() {
       specularMap: textureLoader.load(
         "https://i.ibb.co/LgKKt9G/Earth-Spec.png"
       ),
-      normalScale: new THREE.Vector2(6, 6)
+      normalScale: new THREE.Vector2(6, 6),
     });
     earthMaterial.anisotropy = 16;
     earthMaterial.encoding = THREE.sRGBEncoding;
@@ -419,7 +416,7 @@ function MAIN() {
     //simular inclinacao da Terra (radians)
     earthMesh.rotation.z = -0.401426;
 
-    earthMesh.castShadow = true;
+    earthMesh.castShadow = false;
     earthMesh.receiveShadow = true;
     //draw earth orbit line
     earthOrbitPathMesh = drawEllipseOrbitPath(earthCenterPosition, 0xffffff);
@@ -438,7 +435,7 @@ function MAIN() {
     var moonMaterial = new THREE.MeshPhongMaterial({
       map: textureLoader.load("https://i.ibb.co/2cHJLGh/moonmap1k.jpg"),
       bumpMap: textureLoader.load("https://i.ibb.co/7vDSSZz/moonbump1k.jpg"),
-      bumpScale: 0.002
+      bumpScale: 0.002,
     });
     moonMaterial.anisotropy = 16;
     moonMaterial.encoding = THREE.sRGBEncoding;
@@ -466,7 +463,7 @@ function MAIN() {
     var marsMaterial = new THREE.MeshPhongMaterial({
       map: textureLoader.load("https://i.ibb.co/q1XsgSB/marsmap1k.jpg"),
       bumpMap: textureLoader.load("https://i.ibb.co/QMyJ17w/marsbump1k.jpg"),
-      bumpScale: 0.002
+      bumpScale: 0.002,
     });
     marsMesh = new THREE.Mesh(marsSphere, marsMaterial);
     marsMesh.position.set(marsCenterPosition, 0, 0);
@@ -490,7 +487,7 @@ function MAIN() {
       JUPYTER_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
 
     var jupyterMaterial = new THREE.MeshPhongMaterial({
-      map: textureLoader.load("https://i.ibb.co/rmJWC8m/jupitermap.jpg")
+      map: textureLoader.load("https://i.ibb.co/rmJWC8m/jupitermap.jpg"),
     });
     jupyterMesh = new THREE.Mesh(jupyterSphere, jupyterMaterial);
     jupyterMesh.position.set(jupyterCenterPosition, 0, 0);
@@ -519,7 +516,7 @@ function MAIN() {
       SATURN_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
 
     var saturnMaterial = new THREE.MeshPhongMaterial({
-      map: textureLoader.load("https://i.ibb.co/HqgCYCD/saturnmap.jpg")
+      map: textureLoader.load("https://i.ibb.co/HqgCYCD/saturnmap.jpg"),
     });
     saturnMesh = new THREE.Mesh(saturnSphere, saturnMaterial);
     saturnMesh.rotation.z = -0.471239;
@@ -552,7 +549,7 @@ function MAIN() {
       color: 0xffffff,
       side: THREE.DoubleSide,
       transparent: true,
-      opacity: 0.8
+      opacity: 0.8,
     });
 
     saturnRingMesh = new THREE.Mesh(saturnRingGeometry, saturnRingMaterial);
@@ -579,7 +576,7 @@ function MAIN() {
       URANUS_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
 
     var uranusMaterial = new THREE.MeshPhongMaterial({
-      map: textureLoader.load("https://i.ibb.co/SsPvzx0/uranusmap.jpg")
+      map: textureLoader.load("https://i.ibb.co/SsPvzx0/uranusmap.jpg"),
     });
     uranusMesh = new THREE.Mesh(uranusSphere, uranusMaterial);
     uranusMesh.rotation.z = -1.706932; //97,8degrees
@@ -612,7 +609,7 @@ function MAIN() {
       color: 0xffffff,
       side: THREE.DoubleSide,
       transparent: true,
-      opacity: 0.8
+      opacity: 0.8,
     });
 
     uranusRingMesh = new THREE.Mesh(uranusRingGeometry, uranusRingMaterial);
@@ -640,7 +637,7 @@ function MAIN() {
       NEPTUNO_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
 
     var neptunoMaterial = new THREE.MeshPhongMaterial({
-      map: textureLoader.load("https://i.ibb.co/DtfRtw5/neptunemap.jpg")
+      map: textureLoader.load("https://i.ibb.co/DtfRtw5/neptunemap.jpg"),
     });
     neptunoMesh = new THREE.Mesh(neptunoSphere, neptunoMaterial);
     neptunoMesh.rotation.z = -0.49410271; //97,8degrees
@@ -685,7 +682,7 @@ function MAIN() {
 
   function createRenderer() {
     renderer = new THREE.WebGLRenderer({
-      antialias: true
+      antialias: true,
     });
     renderer.setSize(container.clientWidth, container.clientHeight);
 
@@ -708,7 +705,7 @@ function MAIN() {
 
   function createRendererHelp() {
     rendererHelp = new THREE.WebGLRenderer({
-      antialias: true
+      antialias: true,
     });
 
     rendererHelp.setSize(containerHelp.clientWidth, containerHelp.clientHeight);
@@ -907,7 +904,7 @@ function MAIN() {
   }
 
   function onKeyDown(evt) {
-    console.log(evt);
+    // console.log(evt);
 
     if (evt.keyCode === 79) {
       //o pause or play rotation planet
@@ -1039,7 +1036,7 @@ function MAIN() {
       factor = 1;
     }
 
-    var interval = setInterval(function() {
+    var interval = setInterval(function () {
       canvasHelp.style.opacity = opacity;
       // console.log(opacity);
 
@@ -1091,13 +1088,14 @@ function MAIN() {
 
   function createSpeedMenu() {
     let dataLighting = {
-      Hemisphere_Light: true
+      Hemisphere_Light: true,
+      Sun_Light: 14,
     };
     let visibleObjects = {
-      Orbit_path: true
+      Orbit_path: true,
     };
     let objectsHelper = {
-      axisHelper: true
+      axisHelper: true,
     };
 
     var gui = new dat.GUI();
@@ -1107,15 +1105,15 @@ function MAIN() {
     var folderSpeed = gui.addFolder("Speed settings");
     folderSpeed
       .add(dataControls, "Rotation_Speed", 0, 3)
-      .onChange(function(value) {
+      .onChange(function (value) {
         SIMULATION_SPEED_ROTATION = value;
       });
     folderSpeed
       .add(dataControls, "Orbit_Speed", 0, 3)
-      .onChange(function(value) {
+      .onChange(function (value) {
         SIMULATION_SPEED_ORBIT = value;
       });
-    folderSpeed.add(dataControls, "Stop_Animation").onChange(function(value) {
+    folderSpeed.add(dataControls, "Stop_Animation").onChange(function (value) {
       if (value === true) {
         renderer.setAnimationLoop(null);
       } else {
@@ -1129,15 +1127,22 @@ function MAIN() {
     var folderSpeedLighting = gui.addFolder("Lighting settings");
     folderSpeedLighting
       .add(dataLighting, "Hemisphere_Light")
-      .onChange(function(value) {
+      .onChange(function (value) {
         if (value) scene.add(ambientLight);
         else scene.remove(ambientLight);
+      });
+
+    var folderSpeedSunLighting = gui.addFolder("Sun Light settings");
+    folderSpeedSunLighting
+      .add(dataLighting, "Sun_Light", 1, 24)
+      .onChange(function (value) {
+        light.power = value * 1000 * 4 * Math.PI;
       });
 
     var folderVisibleObjects = gui.addFolder("Objects settings");
     folderVisibleObjects
       .add(visibleObjects, "Orbit_path")
-      .onChange(function(value) {
+      .onChange(function (value) {
         if (value) {
           scene.add(venusOrbitPathMesh);
           scene.add(mercuryoOrbitPathMesh);
@@ -1162,7 +1167,7 @@ function MAIN() {
     var folderObjectsHelper = gui.addFolder("Objects Helper");
     folderObjectsHelper
       .add(objectsHelper, "axisHelper")
-      .onChange(function(value) {
+      .onChange(function (value) {
         if (value) {
           scene.add(axesHelper);
         } else {
@@ -1173,6 +1178,7 @@ function MAIN() {
     // collapse folder1
     folderSpeed.open();
     folderSpeedLighting.close();
+    folderSpeedSunLighting.close();
     folderObjectsHelper.close();
   }
 
@@ -1181,7 +1187,7 @@ function MAIN() {
 }
 
 try {
-  window.onload = function() {
+  window.onload = function () {
     setInterval(() => {}, 500);
     MAIN();
     loadScene.style.display = "none";

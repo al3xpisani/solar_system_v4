@@ -36,6 +36,9 @@ function MAIN() {
     uranusRingMesh,
     neptunoMesh;
 
+  var skybox_group = new THREE.Object3D();
+  var SkyboxMesh;
+
   let mercuryoOrbitPathMesh;
   let venusOrbitPathMesh;
   let earthOrbitPathMesh;
@@ -131,8 +134,8 @@ function MAIN() {
   let uranusRadius = URANUS_SCALE_REF_SUN * REALLITYSCALEFACTOR_RADIUS;
   let neptunoRadius = NEPTUNO_SCALE_REF_SUN * REALLITYSCALEFACTOR_RADIUS;
 
-  const widthSegments = 128;
-  const heightSegments = 128;
+  const widthSegments = 96;
+  const heightSegments = 96;
 
   const sceneBackgroundColor = 0x000000;
 
@@ -179,25 +182,25 @@ function MAIN() {
 
   function createCamera() {
     camera = new THREE.PerspectiveCamera(
-      5, // FOV
+      60, // FOV
       container.clientWidth / container.clientHeight, // aspect
       10, // near clipping plane
-      4000 // far clipping plane,
+      3e8 // far clipping plane,
     );
 
     // var helper = new THREE.CameraHelper(camera);
     // scene.add(helper);
     // compute a target direction
 
-    camera.position.set(-325, 308, 750);
+    camera.position.set(-35, 38, -55);
   }
 
   function createCameraHelper() {
     cameraHelper = new THREE.PerspectiveCamera(
-      3, // FOV
+      60, // FOV
       containerHelp.clientWidth / containerHelp.clientHeight, // aspect
       10, // near clipping plane
-      1000 // far clipping plane,
+      1e8 // far clipping plane,
     );
     cameraHelper.position.set(0, 0, 750);
   }
@@ -208,6 +211,10 @@ function MAIN() {
     controls.enableRotate = true;
     controls.autoRotate = true;
     controls.cameraPan = true;
+    controls.rotateSpeed = 1.0;
+
+    controls.minDistance = 20;
+    controls.maxDistance = 3500;
 
     controls.update();
   }
@@ -248,12 +255,12 @@ function MAIN() {
     //move light
     light.position.set(0, 0, SUN_INIT_POS_Z);
     light.castShadow = true; // default false
-    light.shadow.mapSize.width = 1512; // default
-    light.shadow.mapSize.height = 1512; // default
-    light.shadow.camera.near = 0.5; // default
-    light.shadow.camera.far = 4000; // default
+    // light.shadow.mapSize.width = 1512; // default
+    // light.shadow.mapSize.height = 1512; // default
+    // light.shadow.camera.near = 0.5; // default
+    // light.shadow.camera.far = 4000; // default
 
-    camera.add(light);
+    // camera.add(light);
     scene.add(light);
 
     // The X axis is red. The Y axis is green. The Z axis is blue.
@@ -296,6 +303,18 @@ function MAIN() {
   }
 
   function createMeshes() {
+    // Create skydome.
+    SkyboxMesh = CreateSphere(
+      "./textures/eso_dark.jpg",
+      1e8,
+      50,
+      "Skybox",
+      true
+    );
+    SkyboxMesh.material.side = THREE.BackSide;
+    SkyboxMesh.rotation.x = (Math.PI / 180) * 63;
+    skybox_group.add(SkyboxMesh);
+
     const sunSphere = new THREE.SphereBufferGeometry(
       sunRadius,
       widthSegments,
@@ -665,7 +684,7 @@ function MAIN() {
     // plane.receiveShadow = false;
 
     //scene.add(plane);
-
+    scene.add(skybox_group);
     scene.add(sunMesh);
     scene.add(venusMesh);
     scene.add(mercuryMesh);
@@ -682,7 +701,9 @@ function MAIN() {
 
   function createRenderer() {
     renderer = new THREE.WebGLRenderer({
-      antialias: true,
+      antialias: false,
+      logarithmicDepthBuffer: false,
+      alpha: true,
     });
     renderer.setSize(container.clientWidth, container.clientHeight);
 
@@ -723,6 +744,7 @@ function MAIN() {
 
     rendererHelp.shadowMap.enabled = true;
     rendererHelp.shadowMap.type = THREE.PCFSoftShadowMap;
+    controls.addEventListener("change", render);
 
     containerHelp.appendChild(rendererHelp.domElement);
   }
@@ -1180,6 +1202,28 @@ function MAIN() {
     folderSpeedLighting.close();
     folderSpeedSunLighting.close();
     folderObjectsHelper.close();
+  }
+
+  function CreateSphere(texture_u, radius, polygon_count, name, basic) {
+    var sphere_loader = new THREE.TextureLoader();
+    var sphere_texture = sphere_loader.load(texture_u);
+    var sphere_geometry = new THREE.SphereGeometry(
+      radius,
+      polygon_count,
+      polygon_count
+    );
+    if (basic == true) {
+      var sphere_material = new THREE.MeshBasicMaterial({
+        map: sphere_texture,
+      });
+    } else {
+      var sphere_material = new THREE.MeshLambertMaterial({
+        map: sphere_texture,
+      });
+    }
+    var sphere_mesh = new THREE.Mesh(sphere_geometry, sphere_material);
+    sphere_mesh.name = name;
+    return sphere_mesh;
   }
 
   // call the init function to set everything up
