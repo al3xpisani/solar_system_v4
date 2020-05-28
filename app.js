@@ -1,3 +1,7 @@
+import { Lensflare, LensflareElement } from "./textures/js/Lensflare.js";
+
+Lensflare, LensflareElement;
+
 let loadScene = document.getElementById("loadingScene");
 
 function MAIN() {
@@ -209,12 +213,12 @@ function MAIN() {
     controls = new THREE.OrbitControls(camera, container);
 
     controls.enableRotate = true;
-    controls.autoRotate = true;
+    controls.autoRotate = false;
     controls.cameraPan = true;
     controls.rotateSpeed = 1.0;
 
     controls.minDistance = 20;
-    controls.maxDistance = 3500;
+    controls.maxDistance = 0.8e8; //3500 antes
 
     controls.update();
   }
@@ -233,20 +237,14 @@ function MAIN() {
   function createLights() {
     //I added HemisphereLight so we can see the dark side of the planets
     //Without these additional lights we cannot see anything (only black)
-    ambientLight = new THREE.HemisphereLight(
-      0xffffff, // sky color
-      0x202020, // ground color
-      0.4 // intensity
-    );
+    // ambientLight = new THREE.HemisphereLight(
+    //   0xffffff, // sky color
+    //   0x202020, // ground color
+    //   0.4 // intensity
+    // );
+    // scene.add(ambientLight);
 
-    var ambientLightHelper = new THREE.HemisphereLight(
-      0xffffff, // sky color
-      0x202020, // ground color
-      0.4 // intensity
-    );
-
-    // cameraHelper.add(ambientLightHelper);
-    // sceneHelper.add(ambientLightHelper);
+    ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
     scene.add(ambientLight);
 
     //create directional light
@@ -255,10 +253,33 @@ function MAIN() {
     //move light
     light.position.set(0, 0, SUN_INIT_POS_Z);
     light.castShadow = true; // default false
-    // light.shadow.mapSize.width = 1512; // default
-    // light.shadow.mapSize.height = 1512; // default
+    light.shadow.mapSize.width = 2048; // default
+    light.shadow.mapSize.height = 2048; // default
     // light.shadow.camera.near = 0.5; // default
     // light.shadow.camera.far = 4000; // default
+
+    var textureLoader = new THREE.TextureLoader();
+
+    var textureFlare0 = textureLoader.load(
+      "./textures/lens_flare/lensflare0.png"
+    );
+    var textureFlare1 = textureLoader.load(
+      "./textures/lens_flare/lensflare2.png"
+    );
+    var textureFlare2 = textureLoader.load(
+      "./textures/lens_flare/lensflare3.png"
+    );
+
+    var lensflare = new Lensflare();
+
+    lensflare.addElement(new LensflareElement(textureFlare0, 512, 0.6));
+    lensflare.addElement(new LensflareElement(textureFlare1, 512, 0));
+    lensflare.addElement(new LensflareElement(textureFlare2, 60, 0.6));
+    lensflare.addElement(new LensflareElement(textureFlare2, 70, 0.7));
+    lensflare.addElement(new LensflareElement(textureFlare2, 120, 0.9));
+    lensflare.addElement(new LensflareElement(textureFlare2, 70, 1));
+
+    light.add(lensflare);
 
     // camera.add(light);
     scene.add(light);
@@ -701,7 +722,7 @@ function MAIN() {
 
   function createRenderer() {
     renderer = new THREE.WebGLRenderer({
-      antialias: false,
+      antialias: true,
       logarithmicDepthBuffer: false,
       alpha: true,
     });
@@ -709,12 +730,12 @@ function MAIN() {
 
     renderer.setPixelRatio(window.devicePixelRatio);
 
-    renderer.gammaFactor = 2.2;
+    //Influencia na coloração da imagem de fundo
+    // renderer.gammaFactor = 20.1;
+    // renderer.outputEncoding = THREE.GammaEncoding;
     // renderer.gammaOutput = true;
-    renderer.outputEncoding = THREE.GammaEncoding;
 
-    renderer.gammaOutput = true;
-    renderer.toneMapping = THREE.ReinhardToneMapping;
+    // renderer.toneMapping = THREE.ReinhardToneMapping;
 
     renderer.physicallyCorrectLights = true;
 
