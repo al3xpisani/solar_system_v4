@@ -447,6 +447,7 @@ function MAIN() {
         "https://i.ibb.co/LgKKt9G/Earth-Spec.png"
       ),
       normalScale: new THREE.Vector2(6, 6),
+      specular: new THREE.Color("grey"),
     });
     earthMaterial.anisotropy = 16;
     earthMaterial.encoding = THREE.sRGBEncoding;
@@ -946,8 +947,15 @@ function MAIN() {
     // rendererHelp.setSize(containerHelp.clientWidth, containerHelp.clientHeight);
   }
 
+  function resetCameraPosition() {
+    //r = reset camera position
+    controls.reset();
+    camera.position.set(-35, 38, -55);
+    SIMULATION_SPEED_ORBIT = dataControls.Orbit_Speed;
+  }
+
   function onKeyDown(evt) {
-    // console.log(evt);
+    console.log(evt);
 
     if (evt.keyCode === 79) {
       //o pause or play rotation planet
@@ -965,60 +973,60 @@ function MAIN() {
       }
     } else if (evt.keyCode === 82) {
       //r = reset camera position
-      controls.reset();
-      camera.position.set(-325, 308, 750);
+      resetCameraPosition();
+    } else if (evt.keyCode === 65) {
+      //a
 
-      SIMULATION_SPEED_ORBIT = dataControls.Orbit_Speed;
+      camera.position.set(marsMesh.position.x, 20, marsMesh.position.z + 30);
+      camera.lookAt(marsMesh.position);
     } else if (evt.keyCode === 74) {
       //Jupyter
-      camera.position.x = jupyterMesh.position.x - 50;
-      camera.position.y = 50;
-      camera.position.z = jupyterMesh.position.z + 200;
+
+      camera.position.set(
+        jupyterMesh.position.x,
+        20,
+        jupyterMesh.position.z + 30
+      );
+
       camera.lookAt(jupyterMesh.position);
     } else if (evt.keyCode === 77) {
       //tecla m
       camera.position.x = mercuryMesh.position.x;
-      camera.position.y = 50;
-      camera.position.z = mercuryMesh.position.z + 100;
+      camera.position.y = 20;
+      camera.position.z = mercuryMesh.position.z + 10;
       camera.lookAt(mercuryMesh.position);
     } else if (evt.keyCode === 78) {
       //tecla n
-      camera.position.x = neptunoMesh.position.x - 50;
-      camera.position.y = 50;
+
+      camera.position.x = neptunoMesh.position.x;
+      camera.position.y = 20;
       camera.position.z = neptunoMesh.position.z;
       camera.lookAt(neptunoMesh.position);
     } else if (evt.keyCode === 83) {
       //tecla s
-      camera.position.x = saturnMesh.position.x - 50;
-      camera.position.y = 50;
-      camera.position.z = saturnMesh.position.z + 200;
+      camera.position.x = saturnMesh.position.x - 10;
+      camera.position.y = 20;
+      camera.position.z = saturnMesh.position.z + 30;
       camera.lookAt(saturnMesh.position);
     } else if (evt.keyCode === 85) {
       //tecla u
-      camera.position.x = uranusMesh.position.x - 50;
-      camera.position.y = 50;
-      camera.position.z = uranusMesh.position.z + 200;
+      camera.position.x = uranusMesh.position.x;
+      camera.position.y = 10;
+      camera.position.z = uranusMesh.position.z + 20;
       camera.lookAt(uranusMesh.position);
     } else if (evt.keyCode === 86) {
       // tecla v
 
       camera.position.x = venusMesh.position.x;
-      camera.position.y = 50;
-      camera.position.z = venusMesh.position.z + 100;
+      camera.position.y = 10;
+      camera.position.z = venusMesh.position.z + 20;
       camera.lookAt(venusMesh.position);
     } else if (evt.keyCode === 69) {
       //tecla e
 
-      // controls.target = new THREE.Vector3(
-      //   earthMesh.position.x,
-      //   50,
-      //   earthMesh.position.z + 100
-      // );
-      // controls.update();
-
-      camera.position.x = earthMesh.position.x;
-      camera.position.y = 50;
-      camera.position.z = earthMesh.position.z + 100;
+      camera.position.x = earthMesh.position.x + 10;
+      camera.position.y = 10;
+      camera.position.z = earthMesh.position.z;
       camera.lookAt(earthMesh.position);
 
       SIMULATION_SPEED_ORBIT = dataControls.Orbit_Speed;
@@ -1131,7 +1139,7 @@ function MAIN() {
 
   function createSpeedMenu() {
     let dataLighting = {
-      Hemisphere_Light: true,
+      Ambient_Light: 0.4,
       Sun_Light: 14,
     };
     let visibleObjects = {
@@ -1140,6 +1148,12 @@ function MAIN() {
     let objectsHelper = {
       axisHelper: true,
     };
+
+    var actions = new (function () {
+      this.Reset_Scene = function () {
+        resetCameraPosition();
+      };
+    })();
 
     var gui = new dat.GUI();
 
@@ -1166,13 +1180,13 @@ function MAIN() {
         });
       }
     });
+    folderSpeed.add(actions, "Reset_Scene");
 
     var folderSpeedLighting = gui.addFolder("Lighting settings");
     folderSpeedLighting
-      .add(dataLighting, "Hemisphere_Light")
+      .add(dataLighting, "Ambient_Light", 0, 1)
       .onChange(function (value) {
-        if (value) scene.add(ambientLight);
-        else scene.remove(ambientLight);
+        ambientLight.intensity = value;
       });
 
     var folderSpeedSunLighting = gui.addFolder("Sun Light settings");
