@@ -188,7 +188,7 @@ function MAIN() {
     camera = new THREE.PerspectiveCamera(
       60, // FOV
       container.clientWidth / container.clientHeight, // aspect
-      10, // near clipping plane
+      0.1, // near clipping plane
       3e8 // far clipping plane,
     );
 
@@ -217,7 +217,7 @@ function MAIN() {
     controls.cameraPan = true;
     controls.rotateSpeed = 1.0;
 
-    controls.minDistance = 20;
+    controls.minDistance = 0;
     controls.maxDistance = 0.8e8; //3500 antes
 
     controls.update();
