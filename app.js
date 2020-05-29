@@ -3,8 +3,41 @@ import { Lensflare, LensflareElement } from "./textures/js/Lensflare.js";
 Lensflare, LensflareElement;
 
 let loadScene = document.getElementById("loadingScene");
+var manager;
 
 function MAIN() {
+  manager = new THREE.LoadingManager();
+
+  // document.getElementById("loadbar").innerHTML = "<b> Loading: 0%</b>";
+
+  var progress = document.getElementById("loadbar");
+  var progressBar = document.getElementById("loadpg");
+
+  manager.onStart = function (url, loaded, total) {
+    progress.style.display = "block";
+    progressBar.style.display = "block";
+  };
+
+  manager.onProgress = function (item, loaded, total) {
+    // document.getElementById("loadbar").innerHTML =
+    //   "<b> Loading: </b>" + ((loaded / total) * 100).toFixed(2) + "%";
+    progressBar.style.width = ((loaded / total) * 100).toFixed(2) + "%";
+  };
+
+  manager.onLoad = function () {
+    // document.getElementById("loadbar").innerHTML = "";
+    progress.style.display = "none";
+    progressBar.style.display = "none";
+  };
+
+  //funcao e for para testes da barra de progressao
+  // function addRandomPlaceHoldItImage() {
+  //   var r = Math.round(Math.random() * 4000);
+  //   new THREE.ImageLoader(manager).load("http://placehold.it/" + r + "x" + r);
+  // }
+
+  // for (var i = 0; i < 220; i++) addRandomPlaceHoldItImage();
+
   // these need to be accessed inside more than one function so we'll declare them first
   let container;
 
@@ -1240,7 +1273,7 @@ function MAIN() {
   }
 
   function CreateSphere(texture_u, radius, polygon_count, name, basic) {
-    var sphere_loader = new THREE.TextureLoader();
+    var sphere_loader = new THREE.TextureLoader(manager);
     var sphere_texture = sphere_loader.load(texture_u);
     var sphere_geometry = new THREE.SphereGeometry(
       radius,
@@ -1258,6 +1291,7 @@ function MAIN() {
     }
     var sphere_mesh = new THREE.Mesh(sphere_geometry, sphere_material);
     sphere_mesh.name = name;
+
     return sphere_mesh;
   }
 
@@ -1266,8 +1300,8 @@ function MAIN() {
 }
 
 try {
+  loadScene.style.display = "none";
   window.onload = function () {
-    setInterval(() => {}, 500);
     MAIN();
     loadScene.style.display = "none";
   };
