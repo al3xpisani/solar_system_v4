@@ -357,17 +357,31 @@ function MAIN() {
   }
 
   function createMeshes() {
-    // Create skydome.
-    SkyboxMesh = CreateSphere(
-      "./textures/eso_dark.jpg",
-      1e8,
-      50,
-      "Skybox",
-      true
-    );
-    SkyboxMesh.material.side = THREE.BackSide;
+    var textureLoader = new THREE.TextureLoader(manager);
+
+    const skyTexture = textureLoader.load("./textures/eso_dark.jpg");
+    var sphere_geometryLoading = new THREE.SphereGeometry(1e8, 50, 50);
+    var sphere_materialLoading = new THREE.MeshBasicMaterial({
+      map: skyTexture,
+      side: THREE.BackSide,
+    });
+
+    SkyboxMesh = new THREE.Mesh(sphere_geometryLoading, sphere_materialLoading);
     SkyboxMesh.rotation.x = (Math.PI / 180) * 63;
+    SkyboxMesh.name = "Skybox";
     skybox_group.add(SkyboxMesh);
+
+    // Create skydome.
+    // SkyboxMesh = CreateSphere(
+    //   "./textures/eso_dark.jpg",
+    //   1e8,
+    //   50,
+    //   "Skybox",
+    //   true
+    // );
+    // SkyboxMesh.material.side = THREE.BackSide;
+    // SkyboxMesh.rotation.x = (Math.PI / 180) * 63;
+    // skybox_group.add(SkyboxMesh);
 
     const sunSphere = new THREE.SphereBufferGeometry(
       sunRadius,
@@ -376,7 +390,6 @@ function MAIN() {
     );
     sunSphere.castShadow = true; //default is false
 
-    const textureLoader = new THREE.TextureLoader();
     const sunTexture = textureLoader.load("https://i.ibb.co/3srcxqp/Sol.jpg");
     sunTexture.encoding = THREE.sRGBEncoding;
     sunTexture.anisotropy = 16;
