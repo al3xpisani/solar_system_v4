@@ -2,13 +2,10 @@ import { Lensflare, LensflareElement } from "./textures/js/Lensflare.js";
 
 Lensflare, LensflareElement;
 
-let loadScene = document.getElementById("loadingScene");
 var manager;
 
 function MAIN() {
   manager = new THREE.LoadingManager();
-
-  // document.getElementById("loadbar").innerHTML = "<b> Loading: 0%</b>";
 
   var progress = document.getElementById("loadbar");
   var progressBar = document.getElementById("loadpg");
@@ -19,13 +16,10 @@ function MAIN() {
   };
 
   manager.onProgress = function (item, loaded, total) {
-    // document.getElementById("loadbar").innerHTML =
-    //   "<b> Loading: </b>" + ((loaded / total) * 100).toFixed(2) + "%";
     progressBar.style.width = ((loaded / total) * 100).toFixed(2) + "%";
   };
 
   manager.onLoad = function () {
-    // document.getElementById("loadbar").innerHTML = "";
     progress.style.display = "none";
     progressBar.style.display = "none";
   };
@@ -178,10 +172,6 @@ function MAIN() {
 
   function init() {
     container = document.querySelector("#scene-container");
-    // containerHelp = document.querySelector("#scene-containerHelp");
-    // canvasHelp = document.getElementById(containerHelp.id);
-
-    // canvasOpenHelp = document.getElementById(divHelpID.id);
 
     createSpeedMenu();
 
@@ -192,29 +182,17 @@ function MAIN() {
     sceneHelper.background = new THREE.Color(sceneBackgroundColor);
 
     createCamera();
-    // createCameraHelper();
-
     createControls();
-    // createControlsHelper();
-
     createLights();
     createMeshes();
-    createMeshesHelper();
-
+    setCanvasHelper();
     createRenderer();
-    // createRendererHelp();
 
     // start the animation loop
     renderer.setAnimationLoop(() => {
       update();
       render();
     });
-
-    // // start the animation loop
-    // rendererHelp.setAnimationLoop(() => {
-    //   updateHelper();
-    //   renderHelp();
-    // });
   }
 
   function createCamera() {
@@ -256,26 +234,9 @@ function MAIN() {
     controls.update();
   }
 
-  function createControlsHelper() {
-    controlsHelper = new THREE.OrbitControls(cameraHelper, containerHelp);
-
-    controlsHelper.enableZoom = false;
-    controlsHelper.enableRotate = false;
-    controlsHelper.autoRotate = false;
-    controlsHelper.cameraPan = false;
-
-    controlsHelper.update();
-  }
-
   function createLights() {
     //I added HemisphereLight so we can see the dark side of the planets
     //Without these additional lights we cannot see anything (only black)
-    // ambientLight = new THREE.HemisphereLight(
-    //   0xffffff, // sky color
-    //   0x202020, // ground color
-    //   0.4 // intensity
-    // );
-    // scene.add(ambientLight);
 
     ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
     scene.add(ambientLight);
@@ -305,16 +266,34 @@ function MAIN() {
 
     var lensflare = new Lensflare();
 
-    lensflare.addElement(new LensflareElement(textureFlare0, 512, 0.6));
-    lensflare.addElement(new LensflareElement(textureFlare1, 512, 0));
-    lensflare.addElement(new LensflareElement(textureFlare2, 60, 0.6));
-    lensflare.addElement(new LensflareElement(textureFlare2, 70, 0.7));
-    lensflare.addElement(new LensflareElement(textureFlare2, 120, 0.9));
-    lensflare.addElement(new LensflareElement(textureFlare2, 70, 1));
+    lensflare.addElement(
+      new LensflareElement(textureFlare0, 512, 0.6),
+      THREE.AdditiveBlending
+    );
+    lensflare.addElement(
+      new LensflareElement(textureFlare1, 512, 0),
+      THREE.AdditiveBlending
+    );
+    lensflare.addElement(
+      new LensflareElement(textureFlare2, 60, 0.6),
+      THREE.AdditiveBlending
+    );
+    lensflare.addElement(
+      new LensflareElement(textureFlare2, 70, 0.7),
+      THREE.AdditiveBlending
+    );
+    lensflare.addElement(
+      new LensflareElement(textureFlare2, 120, 0.9),
+      THREE.AdditiveBlending
+    );
+    lensflare.addElement(
+      new LensflareElement(textureFlare2, 70, 1),
+      THREE.AdditiveBlending
+    );
+    lensflare.position.set(0, 0, 0);
 
     light.add(lensflare);
 
-    // camera.add(light);
     scene.add(light);
 
     // The X axis is red. The Y axis is green. The Z axis is blue.
@@ -326,7 +305,7 @@ function MAIN() {
     // scene.add(helper);
   }
 
-  function createMeshesHelper() {
+  function setCanvasHelper() {
     //create and set position of canvasOpenHelp (Help Icon on left bottom)
     canvasOpenHelp.style.bottom = canvasOpenHelpBottom;
     canvasOpenHelp.style.left = canvasOpenHelpLeft;
@@ -338,50 +317,26 @@ function MAIN() {
     canvasHelp.style.bottom = "0px";
     //canvasHelpe for first time is hidden
     canvasHelp.style.height = "0px";
-
-    // var geometry = new THREE.PlaneGeometry(
-    //   containerHelp.clientWidth + 800,
-    //   containerHelp.clientHeight,
-    //   64
-    // );
-    // var material = new THREE.MeshBasicMaterial({
-    //   color: 0xffffff,
-    //   transparent: true,
-    //   opacity: 0.5
-    // });
-    // var plane = new THREE.Mesh(geometry, material);
-    // plane.rotation.z = 1.5708;
-    // //plane.position.set(0, container.clientHeight - containerHelp.clientHeight, 0);
-
-    // sceneHelper.add(plane);
   }
 
   function createMeshes() {
-    var textureLoader = new THREE.TextureLoader(manager);
-
-    const skyTexture = textureLoader.load("./textures/eso_dark.jpg");
-    var sphere_geometryLoading = new THREE.SphereGeometry(1e8, 50, 50);
-    var sphere_materialLoading = new THREE.MeshBasicMaterial({
-      map: skyTexture,
-      side: THREE.BackSide,
-    });
-
-    SkyboxMesh = new THREE.Mesh(sphere_geometryLoading, sphere_materialLoading);
-    SkyboxMesh.rotation.x = (Math.PI / 180) * 63;
-    SkyboxMesh.name = "Skybox";
-    skybox_group.add(SkyboxMesh);
+    const textureLoader = new THREE.TextureLoader(manager);
 
     // Create skydome.
-    // SkyboxMesh = CreateSphere(
-    //   "./textures/eso_dark.jpg",
-    //   1e8,
-    //   50,
-    //   "Skybox",
-    //   true
-    // );
-    // SkyboxMesh.material.side = THREE.BackSide;
-    // SkyboxMesh.rotation.x = (Math.PI / 180) * 63;
-    // skybox_group.add(SkyboxMesh);
+    const skyTexture = textureLoader.load("./textures/eso_dark.jpg");
+    skyTexture.encoding = THREE.sRGBEncoding;
+    skyTexture.anisotropy = 16;
+
+    const skySphere = new THREE.SphereGeometry(1e8, 50, 50);
+
+    const skyMaterial = new THREE.MeshBasicMaterial({
+      side: THREE.DoubleSide,
+      map: skyTexture,
+    });
+    SkyboxMesh = new THREE.Mesh(skySphere, skyMaterial);
+    SkyboxMesh.rotation.x = (Math.PI / 180) * 63;
+
+    skybox_group.add(SkyboxMesh);
 
     const sunSphere = new THREE.SphereBufferGeometry(
       sunRadius,
@@ -707,7 +662,6 @@ function MAIN() {
     uranusOrbitPathMesh = drawEllipseOrbitPath(uranusCenterPosition, 0xffffff);
     uranusAstronomicalUnitFactor = uranusCenterPosition;
     uranusRingMesh.position.x = uranusMesh.position.x;
-    ///////////////////////////////////////////////////////////////
 
     //////////////////////////NEPTUNO ///////////////////////////
 
@@ -740,18 +694,6 @@ function MAIN() {
 
     ///////////////////////////////////////////////////////////////
 
-    //Create a plane that receives shadows (but does not cast them)
-    // var planeGeometry = new THREE.PlaneBufferGeometry(40, 40, 52, 52);
-    // var planeMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
-    // var plane = new THREE.Mesh(planeGeometry, planeMaterial);
-
-    // plane.position.y = -10;
-    // plane.rotation.y = 0;
-    // plane.rotation.x = 5;
-    // plane.rotation.z = 16;
-    // plane.receiveShadow = false;
-
-    //scene.add(plane);
     scene.add(skybox_group);
     scene.add(sunMesh);
     scene.add(venusMesh);
@@ -790,31 +732,6 @@ function MAIN() {
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
     container.appendChild(renderer.domElement);
-  }
-
-  function createRendererHelp() {
-    rendererHelp = new THREE.WebGLRenderer({
-      antialias: true,
-    });
-
-    rendererHelp.setSize(containerHelp.clientWidth, containerHelp.clientHeight);
-
-    rendererHelp.setPixelRatio(window.devicePixelRatio);
-
-    rendererHelp.gammaFactor = 2.2;
-
-    rendererHelp.outputEncoding = THREE.GammaEncoding;
-
-    rendererHelp.gammaOutput = true;
-    rendererHelp.toneMapping = THREE.ReinhardToneMapping;
-
-    rendererHelp.physicallyCorrectLights = true;
-
-    rendererHelp.shadowMap.enabled = true;
-    rendererHelp.shadowMap.type = THREE.PCFSoftShadowMap;
-    controls.addEventListener("change", render);
-
-    containerHelp.appendChild(rendererHelp.domElement);
   }
 
   // perform any updates to the scene, called once per frame
@@ -964,18 +881,12 @@ function MAIN() {
     ////////////////////////////////////////////////////////////////////
   }
 
-  function updateHelper() {}
-
   // render, or 'draw a still image', of the scene
   function render() {
-    // camera.up = new THREE.Vector3(10, 10, 10);
-    // camera.lookAt(neptunoMesh.position);
     renderer.render(scene, camera);
   }
   // render, or 'draw a still image', of the scene
   function renderHelp() {
-    // camera.up = new THREE.Vector3(10, 10, 10);
-    // camera.lookAt(neptunoMesh.position);
     rendererHelp.render(sceneHelper, cameraHelper);
   }
 
@@ -984,13 +895,10 @@ function MAIN() {
   function onWindowResize() {
     // set the aspect ratio to match the new browser window aspect ratio
     camera.aspect = container.clientWidth / container.clientHeight;
-    // cameraHelper.aspect = containerHelp.clientWidth / containerHelp.clientHeight;
     // update the camera's frustum
     camera.updateProjectionMatrix();
-    // cameraHelper.updateProjectionMatrix();
     // update the size of the renderer AND the canvas
     renderer.setSize(container.clientWidth, container.clientHeight);
-    // rendererHelp.setSize(containerHelp.clientWidth, containerHelp.clientHeight);
   }
 
   function resetCameraPosition() {
@@ -1089,12 +997,9 @@ function MAIN() {
     setOpacityAnime(60, true);
   }
 
-  function onMouseHelpIconOut() {
-    //setOpacityAnime(100, false);
-  }
+  function onMouseHelpIconOut() {}
 
   function onformattedHelpOver() {
-    // canvasHelp.style.height = "0px";
     setOpacityAnime(100, false);
   }
 
@@ -1313,12 +1218,9 @@ function MAIN() {
 }
 
 try {
-  loadScene.style.display = "none";
   window.onload = function () {
     MAIN();
-    loadScene.style.display = "none";
   };
 } catch (e) {
-  loadScene.style.display = "none";
   console.log(e);
 }
