@@ -1,39 +1,22 @@
-import { Lensflare, LensflareElement } from "./textures/js/Lensflare.js";
-
-Lensflare, LensflareElement;
-
+import { LoadingManager } from "./LoadingManager/LoadingManager.js";
+import { Camera } from "../three/Camera.js";
+import { Controls } from "./Controls/Controls.js";
+import { Lights } from "./Lights/Lights.js";
+import { Renderer } from "./Renderer/Renderer.js";
 var manager;
 
 function MAIN() {
-  manager = new THREE.LoadingManager();
+  manager = new LoadingManager().setLoadManager("loadbar", "loadpg");
 
-  var progress = document.getElementById("loadbar");
-  var progressBar = document.getElementById("loadpg");
-
-  manager.onStart = function (url, loaded, total) {
-    progress.style.display = "block";
-    progressBar.style.display = "block";
-  };
-
-  manager.onProgress = function (item, loaded, total) {
-    progressBar.style.width = ((loaded / total) * 100).toFixed(2) + "%";
-  };
-
-  manager.onLoad = function () {
-    progress.style.display = "none";
-    progressBar.style.display = "none";
-  };
-
-  //funcao e for para testes da barra de progressao
+  // //funcao e for para testes da barra de progressao
   // function addRandomPlaceHoldItImage() {
   //   var r = Math.round(Math.random() * 4000);
   //   new THREE.ImageLoader(manager).load("http://placehold.it/" + r + "x" + r);
   // }
-
   // for (var i = 0; i < 220; i++) addRandomPlaceHoldItImage();
 
   // these need to be accessed inside more than one function so we'll declare them first
-  let container;
+  let container = document.querySelector("#scene-container");
 
   let containerHelp = document.querySelector("#scene-containerHelp");
   let canvasHelp = document.getElementById(containerHelp.id);
@@ -49,11 +32,10 @@ function MAIN() {
   let camera;
   let cameraHelper;
   let controls;
-  let controlsHelper;
   let renderer;
   let rendererHelp;
   let scene;
-  let sceneHelper;
+
   let sunMesh,
     earthMesh,
     moonMesh,
@@ -171,22 +153,36 @@ function MAIN() {
   const sceneBackgroundColor = 0x000000;
 
   function init() {
-    container = document.querySelector("#scene-container");
-
     createSpeedMenu();
 
     scene = new THREE.Scene();
-    sceneHelper = new THREE.Scene();
-
     scene.background = new THREE.Color(sceneBackgroundColor);
-    sceneHelper.background = new THREE.Color(sceneBackgroundColor);
 
-    createCamera();
-    createControls();
-    createLights();
+    camera = new Camera(container, 60, 0.1, 3e8, -35, 38, -55);
+    //createCamera();
+    controls = new Controls(
+      camera,
+      container,
+      0,
+      0.8e8,
+      true,
+      false,
+      true,
+      1.0
+    );
+    // createControls();
+
+    ambientLight = new Lights(scene).ambientLight(0xffffff, 0.4);
+    light = new Lights(scene).light(0xffffff, 14000, 0, 2, 0, 0, 0, true);
+    axesHelper = new Lights(scene).axesHelper(1000);
+    //createLights();
+
     createMeshes();
+
     setCanvasHelper();
-    createRenderer();
+
+    renderer = new Renderer(container);
+    //createRenderer();
 
     // start the animation loop
     renderer.setAnimationLoop(() => {
@@ -195,30 +191,20 @@ function MAIN() {
     });
   }
 
-  function createCamera() {
-    camera = new THREE.PerspectiveCamera(
-      60, // FOV
-      container.clientWidth / container.clientHeight, // aspect
-      0.1, // near clipping plane
-      3e8 // far clipping plane,
-    );
+  // function createCamera() {
+  //   camera = new THREE.PerspectiveCamera(
+  //     60, // FOV
+  //     container.clientWidth / container.clientHeight, // aspect
+  //     0.1, // near clipping plane
+  //     3e8 // far clipping plane,
+  //   );
 
-    // var helper = new THREE.CameraHelper(camera);
-    // scene.add(helper);
-    // compute a target direction
+  //   // var helper = new THREE.CameraHelper(camera);
+  //   // scene.add(helper);
+  //   // compute a target direction
 
-    camera.position.set(-35, 38, -55);
-  }
-
-  function createCameraHelper() {
-    cameraHelper = new THREE.PerspectiveCamera(
-      60, // FOV
-      containerHelp.clientWidth / containerHelp.clientHeight, // aspect
-      10, // near clipping plane
-      1e8 // far clipping plane,
-    );
-    cameraHelper.position.set(0, 0, 750);
-  }
+  //   camera.position.set(-35, 38, -55);
+  // }
 
   function createControls() {
     controls = new THREE.OrbitControls(camera, container);
@@ -885,10 +871,6 @@ function MAIN() {
   function render() {
     renderer.render(scene, camera);
   }
-  // render, or 'draw a still image', of the scene
-  function renderHelp() {
-    rendererHelp.render(sceneHelper, cameraHelper);
-  }
 
   // a function that will be called every time the window gets resized.
   // It can get called a lot, so don't put any heavy computation in here!
@@ -903,6 +885,7 @@ function MAIN() {
 
   function resetCameraPosition() {
     //r = reset camera position
+    console.log(controls);
     controls.reset();
     camera.position.set(-35, 38, -55);
     SIMULATION_SPEED_ORBIT = dataControls.Orbit_Speed;
