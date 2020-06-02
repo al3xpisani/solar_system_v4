@@ -1,7 +1,94 @@
-import { MeshsKinds, MapKinds } from "../constants/Constants.js";
+import {
+  MeshsKinds,
+  MapKinds,
+  PlanetsRings,
+  PlanetsURL,
+} from "../constants/Constants.js";
 
 var CreatePlanet = function (textureLoader) {
   var mesh;
+
+  this.drawEllipseOrbitPath = function (
+    scene,
+    planetCenterPosition,
+    hexLineColor
+  ) {
+    var mesh;
+    var curve = new THREE.EllipseCurve(
+      0,
+      0, // ax, aY
+      planetCenterPosition,
+      planetCenterPosition, // xRadius, yRadius
+      0,
+      2 * Math.PI, // aStartAngle, aEndAngle
+      false, // aClockwise
+      0 // aRotation
+    );
+
+    var points = curve.getPoints(100);
+    var geometry = new THREE.BufferGeometry().setFromPoints(points);
+
+    var material = new THREE.LineBasicMaterial({ color: hexLineColor });
+
+    // Create the final object to add to the scene
+    var mesh = new THREE.Line(geometry, material);
+    mesh.rotation.x = 1.5708; //rotaciona o eixo X na mesma direcao do eixo x dos planetas
+    scene.add(mesh);
+
+    return mesh;
+  };
+
+  this.setPlanetRing = function (planetName, radius, rotationx, rotationy) {
+    //Draw Saturn Ring
+    var satUraRingMesh;
+    var satUraInnerRadius = radius + 1;
+    var satUrOuterRadius = radius + 5;
+    var satUrThetaSegments = 60;
+
+    const satUraRingGeometry = new THREE.RingBufferGeometry(
+      satUraInnerRadius,
+      satUrOuterRadius,
+      satUrThetaSegments
+    );
+
+    var pos = satUraRingGeometry.attributes.position;
+    var v3 = new THREE.Vector3();
+    for (let i = 0; i < pos.count; i++) {
+      v3.fromBufferAttribute(pos, i);
+      satUraRingGeometry.attributes.uv.setXY(
+        i,
+        v3.length() < satUraInnerRadius + 1 ? 0 : 1,
+        1
+      );
+    }
+
+    var satUraRingMaterial;
+
+    if (planetName === PlanetsRings.SATURN) {
+      satUraRingMaterial = new THREE.MeshBasicMaterial({
+        map: textureLoader.load(PlanetsURL.SATURN_RING_MAP),
+        color: 0xffffff,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.8,
+      });
+    } else {
+      //URANUS
+      satUraRingMaterial = new THREE.MeshBasicMaterial({
+        map: textureLoader.load(PlanetsURL.URANUS_RING_MAP),
+        color: 0xffffff,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.8,
+      });
+    }
+
+    satUraRingMesh = new THREE.Mesh(satUraRingGeometry, satUraRingMaterial);
+    satUraRingMesh.rotation.x = rotationx; //rotaciona o eixo X na mesma direcao do eixo x dos planetas
+    satUraRingMesh.rotation.y = rotationy;
+
+    return satUraRingMesh;
+  };
 
   this.createPlanet = function (
     meshKind,
@@ -38,7 +125,10 @@ var CreatePlanet = function (textureLoader) {
     var planetTextureEmissiveMapLoader;
     var planetTextureBumpMapLoader;
 
-    if (mapKind === MapKinds.mapKind[2]) {
+    if (mapKind === MapKinds.mapKind[0]) {
+      //map
+      planetTextureMapLoader = textureLoader.load(planetTextureMap);
+    } else if (mapKind === MapKinds.mapKind[2]) {
       //emissive
       planetTextureEmissiveMapLoader = textureLoader.load(
         planetTextureEmissiveMap
@@ -76,6 +166,7 @@ var CreatePlanet = function (textureLoader) {
     var planetMaterial;
 
     if (meshKind === MeshsKinds.meshKind[0]) {
+      //MeshStandardMaterial
       if (mapKind === MapKinds.mapKind[2]) {
         //emissive
         planetMaterial = new THREE.MeshStandardMaterial({
@@ -94,6 +185,14 @@ var CreatePlanet = function (textureLoader) {
           roughness: 1,
         });
       }
+    } else if (meshKind === MeshsKinds.meshKind[1]) {
+      //MeshBasicMaterial
+      if (mapKind === MapKinds.mapKind[0]) {
+        //map
+        planetMaterial = new THREE.MeshBasicMaterial({
+          map: planetTextureMapLoader,
+        });
+      }
     } else if (meshKind === MeshsKinds.meshKind[2]) {
       //MeshPhongMaterial
       if (
@@ -110,10 +209,15 @@ var CreatePlanet = function (textureLoader) {
         });
       } else if (mapKind === MapKinds.mapKind[0] + MapKinds.mapKind[4]) {
         //map + bumpMap
-        var planetMaterial = new THREE.MeshPhongMaterial({
+        planetMaterial = new THREE.MeshPhongMaterial({
           map: planetTextureMapLoader,
           bumpMap: planetTextureBumpMapLoader,
           bumpScale: 0.002,
+        });
+      } else if (mapKind === MapKinds.mapKind[0]) {
+        //map
+        planetMaterial = new THREE.MeshPhongMaterial({
+          map: planetTextureMapLoader,
         });
       }
     }
@@ -128,6 +232,7 @@ var CreatePlanet = function (textureLoader) {
         mesh.rotation.z = rotationz;
       }
     }
+
     return mesh;
   };
 };

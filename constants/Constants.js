@@ -2,6 +2,11 @@ const Paths = {
   sky_dome: "../textures/eso_dark.jpg",
 };
 
+const PlanetsRings = {
+  URANUS: "URANUS",
+  SATURN: "SATURN",
+};
+
 const MeshsKinds = {
   meshKind: ["MeshStandardMaterial", "MeshBasicMaterial", "MeshPhongMaterial"],
 };
@@ -21,6 +26,14 @@ const PlanetsURL = {
   EARTH_SPECULAR_MAP: "https://i.ibb.co/LgKKt9G/Earth-Spec.png",
   MOON_MAP: "https://i.ibb.co/2cHJLGh/moonmap1k.jpg",
   MOON_BUMP_MAP: "https://i.ibb.co/7vDSSZz/moonbump1k.jpg",
+  MARS_MAP: "https://i.ibb.co/q1XsgSB/marsmap1k.jpg",
+  MARS_BUMP: "https://i.ibb.co/QMyJ17w/marsbump1k.jpg",
+  JUPYTER_MAP: "https://i.ibb.co/rmJWC8m/jupitermap.jpg",
+  SATURN_MAP: "https://i.ibb.co/HqgCYCD/saturnmap.jpg",
+  SATURN_RING_MAP: "https://i.ibb.co/LQwTkmy/saturnringpattern.gif",
+  URANUS_MAP: "https://i.ibb.co/SsPvzx0/uranusmap.jpg",
+  URANUS_RING_MAP: "https://i.ibb.co/RHdh0ym/uranusringtrans.gif",
+  NEPTUNO_MAP: "https://i.ibb.co/DtfRtw5/neptunemap.jpg",
 };
 
-export { Paths, PlanetsURL, MeshsKinds, MapKinds };
+export { Paths, PlanetsURL, MeshsKinds, MapKinds, PlanetsRings };
