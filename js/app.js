@@ -3,17 +3,18 @@ import { Camera } from "../three/Camera.js";
 import { Controls } from "./Controls/Controls.js";
 import { Lights } from "./Lights/Lights.js";
 import { Renderer } from "./Renderer/Renderer.js";
+import { SkyDome } from "./skyDome/SkyDome.js";
+import {
+  Paths,
+  PlanetsURL,
+  MeshsKinds,
+  MapKinds,
+} from "../constants/Constants.js";
+import { CreatePlanet } from "../Planets/createPlanets.js";
 var manager;
 
 function MAIN() {
   manager = new LoadingManager().setLoadManager("loadbar", "loadpg");
-
-  // //funcao e for para testes da barra de progressao
-  // function addRandomPlaceHoldItImage() {
-  //   var r = Math.round(Math.random() * 4000);
-  //   new THREE.ImageLoader(manager).load("http://placehold.it/" + r + "x" + r);
-  // }
-  // for (var i = 0; i < 220; i++) addRandomPlaceHoldItImage();
 
   // these need to be accessed inside more than one function so we'll declare them first
   let container = document.querySelector("#scene-container");
@@ -30,10 +31,8 @@ function MAIN() {
   //
   let light;
   let camera;
-  let cameraHelper;
   let controls;
   let renderer;
-  let rendererHelp;
   let scene;
 
   let sunMesh,
@@ -50,7 +49,6 @@ function MAIN() {
     neptunoMesh;
 
   var skybox_group = new THREE.Object3D();
-  var SkyboxMesh;
 
   let mercuryoOrbitPathMesh;
   let venusOrbitPathMesh;
@@ -150,16 +148,13 @@ function MAIN() {
   const widthSegments = 96;
   const heightSegments = 96;
 
-  const sceneBackgroundColor = 0x000000;
-
   function init() {
     createSpeedMenu();
 
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(sceneBackgroundColor);
 
     camera = new Camera(container, 60, 0.1, 3e8, -35, 38, -55);
-    //createCamera();
+
     controls = new Controls(
       camera,
       container,
@@ -170,125 +165,21 @@ function MAIN() {
       true,
       1.0
     );
-    // createControls();
 
     ambientLight = new Lights(scene).ambientLight(0xffffff, 0.4);
     light = new Lights(scene).light(0xffffff, 14000, 0, 2, 0, 0, 0, true);
     axesHelper = new Lights(scene).axesHelper(1000);
-    //createLights();
 
     createMeshes();
-
     setCanvasHelper();
 
     renderer = new Renderer(container);
-    //createRenderer();
 
     // start the animation loop
     renderer.setAnimationLoop(() => {
       update();
       render();
     });
-  }
-
-  // function createCamera() {
-  //   camera = new THREE.PerspectiveCamera(
-  //     60, // FOV
-  //     container.clientWidth / container.clientHeight, // aspect
-  //     0.1, // near clipping plane
-  //     3e8 // far clipping plane,
-  //   );
-
-  //   // var helper = new THREE.CameraHelper(camera);
-  //   // scene.add(helper);
-  //   // compute a target direction
-
-  //   camera.position.set(-35, 38, -55);
-  // }
-
-  function createControls() {
-    controls = new THREE.OrbitControls(camera, container);
-
-    controls.enableRotate = true;
-    controls.autoRotate = false;
-    controls.cameraPan = true;
-    controls.rotateSpeed = 1.0;
-
-    controls.minDistance = 0;
-    controls.maxDistance = 0.8e8; //3500 antes
-
-    controls.update();
-  }
-
-  function createLights() {
-    //I added HemisphereLight so we can see the dark side of the planets
-    //Without these additional lights we cannot see anything (only black)
-
-    ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
-    scene.add(ambientLight);
-
-    //create directional light
-    //These light goes in the center of the sun to shine all directions
-    light = new THREE.PointLight(0xffffff, 14000, 0, 2);
-    //move light
-    light.position.set(0, 0, SUN_INIT_POS_Z);
-    light.castShadow = true; // default false
-    light.shadow.mapSize.width = 2048; // default
-    light.shadow.mapSize.height = 2048; // default
-    // light.shadow.camera.near = 0.5; // default
-    // light.shadow.camera.far = 4000; // default
-
-    var textureLoader = new THREE.TextureLoader();
-
-    var textureFlare0 = textureLoader.load(
-      "./textures/lens_flare/lensflare0.png"
-    );
-    var textureFlare1 = textureLoader.load(
-      "./textures/lens_flare/lensflare2.png"
-    );
-    var textureFlare2 = textureLoader.load(
-      "./textures/lens_flare/lensflare3.png"
-    );
-
-    var lensflare = new Lensflare();
-
-    lensflare.addElement(
-      new LensflareElement(textureFlare0, 512, 0.6),
-      THREE.AdditiveBlending
-    );
-    lensflare.addElement(
-      new LensflareElement(textureFlare1, 512, 0),
-      THREE.AdditiveBlending
-    );
-    lensflare.addElement(
-      new LensflareElement(textureFlare2, 60, 0.6),
-      THREE.AdditiveBlending
-    );
-    lensflare.addElement(
-      new LensflareElement(textureFlare2, 70, 0.7),
-      THREE.AdditiveBlending
-    );
-    lensflare.addElement(
-      new LensflareElement(textureFlare2, 120, 0.9),
-      THREE.AdditiveBlending
-    );
-    lensflare.addElement(
-      new LensflareElement(textureFlare2, 70, 1),
-      THREE.AdditiveBlending
-    );
-    lensflare.position.set(0, 0, 0);
-
-    light.add(lensflare);
-
-    scene.add(light);
-
-    // The X axis is red. The Y axis is green. The Z axis is blue.
-    axesHelper = new THREE.AxesHelper(1000);
-    scene.add(axesHelper);
-
-    //Create a helper for the shadow camera (optional)
-    // var helper = new THREE.CameraHelper(light.shadow.camera);
-    // scene.add(helper);
   }
 
   function setCanvasHelper() {
@@ -308,106 +199,99 @@ function MAIN() {
   function createMeshes() {
     const textureLoader = new THREE.TextureLoader(manager);
 
-    // Create skydome.
-    const skyTexture = textureLoader.load("./textures/eso_dark.jpg");
-    skyTexture.encoding = THREE.sRGBEncoding;
-    skyTexture.anisotropy = 16;
+    skybox_group = new SkyDome(Paths.sky_dome, 1e8, textureLoader).addSkyDome();
 
-    const skySphere = new THREE.SphereGeometry(1e8, 50, 50);
-
-    const skyMaterial = new THREE.MeshBasicMaterial({
-      side: THREE.DoubleSide,
-      map: skyTexture,
-    });
-    SkyboxMesh = new THREE.Mesh(skySphere, skyMaterial);
-    SkyboxMesh.rotation.x = (Math.PI / 180) * 63;
-
-    skybox_group.add(SkyboxMesh);
-
-    const sunSphere = new THREE.SphereBufferGeometry(
+    sunMesh = new CreatePlanet(textureLoader).createPlanet(
+      MeshsKinds.meshKind[0],
+      true,
+      false,
+      null,
+      null,
+      null,
+      SUN_INIT_POS_X,
+      SUN_INIT_POS_Y,
+      SUN_INIT_POS_Z,
       sunRadius,
       widthSegments,
-      heightSegments
+      heightSegments,
+      false,
+      false,
+      null,
+      null,
+      PlanetsURL.SUN,
+      null,
+      null,
+      0xffffff,
+      MapKinds.mapKind[2]
     );
-    sunSphere.castShadow = true; //default is false
-
-    const sunTexture = textureLoader.load("https://i.ibb.co/3srcxqp/Sol.jpg");
-    sunTexture.encoding = THREE.sRGBEncoding;
-    sunTexture.anisotropy = 16;
-
-    const sunMaterial = new THREE.MeshStandardMaterial({
-      side: THREE.DoubleSide,
-      emissive: 0xffffff,
-      emissiveMap: sunTexture,
-      roughness: 1,
-      normalScale: new THREE.Vector2(4, 4),
-    });
-    sunMesh = new THREE.Mesh(sunSphere, sunMaterial);
-    sunMesh.position.set(SUN_INIT_POS_X, SUN_INIT_POS_Y, SUN_INIT_POS_Z);
 
     ////////////////////MERCURY///////////////////////////////////
-
-    const mercurySphere = new THREE.SphereBufferGeometry(
-      mercuryRadius,
-      widthSegments,
-      heightSegments
-    );
-    const mercuryMaterial = new THREE.MeshStandardMaterial({
-      map: new THREE.TextureLoader().load(
-        "https://i.ibb.co/Z2qdm1M/2k-mercury.jpg"
-      ),
-      bumpMap: new THREE.TextureLoader().load(
-        "https://i.ibb.co/2cXm7Ld/mercurybump.jpg"
-      ),
-      bumpScale: 0.002,
-      roughness: 1,
-    });
-
     var mercuryCenterPosition =
       SUN_INIT_POS_X +
       SUNSCALE_RADIUS +
       mercuryRadius +
       MERCURY_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
 
-    mercuryMesh = new THREE.Mesh(mercurySphere, mercuryMaterial);
-    mercuryMesh.position.set(mercuryCenterPosition, 0, 0);
-
+    mercuryMesh = new CreatePlanet(textureLoader).createPlanet(
+      MeshsKinds.meshKind[0],
+      true,
+      false,
+      null,
+      null,
+      null,
+      mercuryCenterPosition,
+      0,
+      0,
+      mercuryRadius,
+      widthSegments,
+      heightSegments,
+      false,
+      false,
+      PlanetsURL.MERCURY_MAP,
+      null,
+      null,
+      null,
+      PlanetsURL.MERCURY_BUMP,
+      null,
+      MapKinds.mapKind[0] + MapKinds.mapKind[4]
+    );
     //draw planet orbit line
     mercuryoOrbitPathMesh = drawEllipseOrbitPath(
       mercuryCenterPosition,
       0xffffff
     );
-
     mercuryAstronomicalUnitFactor = mercuryCenterPosition;
 
     ///////////////VENUS////////////////////////////////////////
-
-    const venusSphere = new THREE.SphereBufferGeometry(
-      venusRadius,
-      widthSegments,
-      heightSegments
-    );
-
     let venusCenterPosition =
       mercuryMesh.position.x +
       mercuryRadius +
       venusRadius +
       VENUS_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
 
-    const venusMaterial = new THREE.MeshStandardMaterial({
-      map: new THREE.TextureLoader().load(
-        "https://i.ibb.co/pPPFV0R/venusmap.jpg"
-      ),
-      bumpMap: new THREE.TextureLoader().load(
-        "https://i.ibb.co/Gtw6t8x/venusbump.jpg"
-      ),
-      bumpScale: 0.002,
-      roughness: 1,
-    });
-
-    venusMesh = new THREE.Mesh(venusSphere, venusMaterial);
-    venusMesh.position.set(venusCenterPosition, 0, 0);
-
+    venusMesh = new CreatePlanet(textureLoader).createPlanet(
+      MeshsKinds.meshKind[0],
+      true,
+      false,
+      null,
+      null,
+      null,
+      venusCenterPosition,
+      0,
+      0,
+      venusRadius,
+      widthSegments,
+      heightSegments,
+      false,
+      false,
+      PlanetsURL.VENUS_MAP,
+      null,
+      null,
+      null,
+      PlanetsURL.VENUS_BUMP,
+      null,
+      MapKinds.mapKind[0] + MapKinds.mapKind[4]
+    );
     //draw planet orbit line
     venusOrbitPathMesh = drawEllipseOrbitPath(venusCenterPosition, 0xffffff);
     venusAstronomicalUnitFactor = venusCenterPosition;
@@ -425,55 +309,62 @@ function MAIN() {
       earthRadius +
       EARTH_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
 
-    var earthMaterial = new THREE.MeshPhongMaterial({
-      map: textureLoader.load("https://i.ibb.co/M8wzz6b/Earth.png"),
-      normalMap: textureLoader.load(
-        "https://i.ibb.co/SBLFSV0/Earth-Normal.png"
-      ),
-      specularMap: textureLoader.load(
-        "https://i.ibb.co/LgKKt9G/Earth-Spec.png"
-      ),
-      normalScale: new THREE.Vector2(6, 6),
-      specular: new THREE.Color("grey"),
-    });
-    earthMaterial.anisotropy = 16;
-    earthMaterial.encoding = THREE.sRGBEncoding;
-
-    earthMesh = new THREE.Mesh(earthSphere, earthMaterial);
-    earthMesh.position.set(earthCenterPosition, 0, 0);
-    //simular inclinacao da Terra (radians)
-    earthMesh.rotation.z = -0.401426;
-
-    earthMesh.castShadow = false;
-    earthMesh.receiveShadow = true;
+    earthMesh = new CreatePlanet(textureLoader).createPlanet(
+      MeshsKinds.meshKind[2],
+      true,
+      true,
+      null,
+      null,
+      -0.401426,
+      earthCenterPosition,
+      0,
+      0,
+      earthRadius,
+      widthSegments,
+      heightSegments,
+      false,
+      true,
+      PlanetsURL.EARTH_MAP,
+      PlanetsURL.EARTH_NORMAL_MAP,
+      null,
+      PlanetsURL.EARTH_SPECULAR_MAP,
+      null,
+      null,
+      MapKinds.mapKind[0] + MapKinds.mapKind[1] + MapKinds.mapKind[3]
+    );
     //draw earth orbit line
     earthOrbitPathMesh = drawEllipseOrbitPath(earthCenterPosition, 0xffffff);
     earthAstronomicalUnitFactor = earthCenterPosition;
 
     /////////////////MOON//////////////////////////////////////////
-    const moonSphere = new THREE.SphereBufferGeometry(
-      moonRadius,
-      widthSegments,
-      heightSegments
-    );
-
     let moonCenterPosition =
       earthMesh.position.x + earthRadius * 2 + MOON_DISTFROM_EARTH_UA;
 
-    var moonMaterial = new THREE.MeshPhongMaterial({
-      map: textureLoader.load("https://i.ibb.co/2cHJLGh/moonmap1k.jpg"),
-      bumpMap: textureLoader.load("https://i.ibb.co/7vDSSZz/moonbump1k.jpg"),
-      bumpScale: 0.002,
-    });
-    moonMaterial.anisotropy = 16;
-    moonMaterial.encoding = THREE.sRGBEncoding;
-
-    moonMesh = new THREE.Mesh(moonSphere, moonMaterial);
-    moonMesh.position.set(moonCenterPosition, 0, 0);
+    moonMesh = new CreatePlanet(textureLoader).createPlanet(
+      MeshsKinds.meshKind[2],
+      true,
+      false,
+      null,
+      null,
+      false,
+      moonCenterPosition,
+      0,
+      0,
+      moonRadius,
+      widthSegments,
+      heightSegments,
+      true,
+      true,
+      PlanetsURL.MOON_MAP,
+      null,
+      null,
+      PlanetsURL.MOON_BUMP_MAP,
+      null,
+      null,
+      MapKinds.mapKind[0] + MapKinds.mapKind[4]
+    );
     moonAstronomicalUnitFactor = earthRadius * 2 + MOON_DISTFROM_EARTH_UA;
 
-    moonMesh.castShadow = true;
-    moonMesh.receiveShadow = true;
     //////////////////////////MARS///////////////////////////
 
     const marsSphere = new THREE.SphereBufferGeometry(
@@ -603,7 +494,7 @@ function MAIN() {
       uranusRadius +
       URANUS_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
 
-    var uranusMaterial = new THREE.MeshPhongMaterial({
+    var uranusMaterial = new THREE.MeshBasicMaterial({
       map: textureLoader.load("https://i.ibb.co/SsPvzx0/uranusmap.jpg"),
     });
     uranusMesh = new THREE.Mesh(uranusSphere, uranusMaterial);
@@ -663,7 +554,7 @@ function MAIN() {
       neptunoRadius +
       NEPTUNO_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
 
-    var neptunoMaterial = new THREE.MeshPhongMaterial({
+    var neptunoMaterial = new THREE.MeshBasicMaterial({
       map: textureLoader.load("https://i.ibb.co/DtfRtw5/neptunemap.jpg"),
     });
     neptunoMesh = new THREE.Mesh(neptunoSphere, neptunoMaterial);
@@ -693,31 +584,6 @@ function MAIN() {
     scene.add(uranusMesh);
     scene.add(uranusRingMesh);
     scene.add(neptunoMesh);
-  }
-
-  function createRenderer() {
-    renderer = new THREE.WebGLRenderer({
-      antialias: true,
-      logarithmicDepthBuffer: false,
-      alpha: true,
-    });
-    renderer.setSize(container.clientWidth, container.clientHeight);
-
-    renderer.setPixelRatio(window.devicePixelRatio);
-
-    //Influencia na coloração da imagem de fundo
-    // renderer.gammaFactor = 20.1;
-    // renderer.outputEncoding = THREE.GammaEncoding;
-    // renderer.gammaOutput = true;
-
-    // renderer.toneMapping = THREE.ReinhardToneMapping;
-
-    renderer.physicallyCorrectLights = true;
-
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-    container.appendChild(renderer.domElement);
   }
 
   // perform any updates to the scene, called once per frame
@@ -1173,37 +1039,14 @@ function MAIN() {
     folderObjectsHelper.close();
   }
 
-  function CreateSphere(texture_u, radius, polygon_count, name, basic) {
-    var sphere_loader = new THREE.TextureLoader(manager);
-    var sphere_texture = sphere_loader.load(texture_u);
-    var sphere_geometry = new THREE.SphereGeometry(
-      radius,
-      polygon_count,
-      polygon_count
-    );
-    if (basic == true) {
-      var sphere_material = new THREE.MeshBasicMaterial({
-        map: sphere_texture,
-      });
-    } else {
-      var sphere_material = new THREE.MeshLambertMaterial({
-        map: sphere_texture,
-      });
-    }
-    var sphere_mesh = new THREE.Mesh(sphere_geometry, sphere_material);
-    sphere_mesh.name = name;
-
-    return sphere_mesh;
-  }
-
   // call the init function to set everything up
   init();
 }
 
 try {
-  window.onload = function () {
-    MAIN();
-  };
+  //window.onload = function () {
+  MAIN();
+  //};
 } catch (e) {
   console.log(e);
 }

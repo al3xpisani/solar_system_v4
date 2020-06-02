@@ -25,6 +25,14 @@ var LoadingManager = function () {
       progress.style.display = "none";
       progressBar.style.display = "none";
     };
+
+    // //funcao e for para testes da barra de progressao
+    // function addRandomPlaceHoldItImage() {
+    //   var r = Math.round(Math.random() * 4000);
+    //   new THREE.ImageLoader(manager).load("http://placehold.it/" + r + "x" + r);
+    // }
+    // for (var i = 0; i < 220; i++) addRandomPlaceHoldItImage();
+
     return manager;
   };
 };

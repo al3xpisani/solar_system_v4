@@ -1,8 +1,23 @@
-let loadScene = document.getElementById("loadingScene");
+import { LoadingManager } from "./LoadingManager/LoadingManager.js";
+import { Camera } from "../three/Camera.js";
+import { Controls } from "./Controls/Controls.js";
+import { Lights } from "./Lights/Lights.js";
+import { Renderer } from "./Renderer/Renderer.js";
+import { SkyDome } from "./skyDome/SkyDome.js";
+import {
+  Paths,
+  PlanetsURL,
+  MeshsKinds,
+  MapKinds,
+} from "../constants/Constants.js";
+import { CreatePlanet } from "../Planets/createPlanets.js";
+var manager;
 
 function MAIN() {
+  manager = new LoadingManager().setLoadManager("loadbar", "loadpg");
+
   // these need to be accessed inside more than one function so we'll declare them first
-  let container;
+  let container = document.querySelector("#scene-container");
 
   let containerHelp = document.querySelector("#scene-containerHelp");
   let canvasHelp = document.getElementById(containerHelp.id);
@@ -16,13 +31,10 @@ function MAIN() {
   //
   let light;
   let camera;
-  let cameraHelper;
   let controls;
-  let controlsHelper;
   let renderer;
-  let rendererHelp;
   let scene;
-  let sceneHelper;
+
   let sunMesh,
     earthMesh,
     moonMesh,
@@ -35,6 +47,8 @@ function MAIN() {
     uranusMesh,
     uranusRingMesh,
     neptunoMesh;
+
+  var skybox_group = new THREE.Object3D();
 
   let mercuryoOrbitPathMesh;
   let venusOrbitPathMesh;
@@ -131,141 +145,44 @@ function MAIN() {
   let uranusRadius = URANUS_SCALE_REF_SUN * REALLITYSCALEFACTOR_RADIUS;
   let neptunoRadius = NEPTUNO_SCALE_REF_SUN * REALLITYSCALEFACTOR_RADIUS;
 
-  const widthSegments = 128;
-  const heightSegments = 128;
-
-  const sceneBackgroundColor = 0x000000;
+  const widthSegments = 96;
+  const heightSegments = 96;
 
   function init() {
-    container = document.querySelector("#scene-container");
-    // containerHelp = document.querySelector("#scene-containerHelp");
-    // canvasHelp = document.getElementById(containerHelp.id);
-
-    // canvasOpenHelp = document.getElementById(divHelpID.id);
-
     createSpeedMenu();
 
     scene = new THREE.Scene();
-    sceneHelper = new THREE.Scene();
 
-    scene.background = new THREE.Color(sceneBackgroundColor);
-    sceneHelper.background = new THREE.Color(sceneBackgroundColor);
+    camera = new Camera(container, 60, 0.1, 3e8, -35, 38, -55);
 
-    createCamera();
-    // createCameraHelper();
+    controls = new Controls(
+      camera,
+      container,
+      0,
+      0.8e8,
+      true,
+      false,
+      true,
+      1.0
+    );
 
-    createControls();
-    // createControlsHelper();
+    ambientLight = new Lights(scene).ambientLight(0xffffff, 0.4);
+    light = new Lights(scene).light(0xffffff, 14000, 0, 2, 0, 0, 0, true);
+    axesHelper = new Lights(scene).axesHelper(1000);
 
-    createLights();
     createMeshes();
-    createMeshesHelper();
+    setCanvasHelper();
 
-    createRenderer();
-    // createRendererHelp();
+    renderer = new Renderer(container);
 
     // start the animation loop
     renderer.setAnimationLoop(() => {
       update();
       render();
     });
-
-    // // start the animation loop
-    // rendererHelp.setAnimationLoop(() => {
-    //   updateHelper();
-    //   renderHelp();
-    // });
   }
 
-  function createCamera() {
-    camera = new THREE.PerspectiveCamera(
-      5, // FOV
-      container.clientWidth / container.clientHeight, // aspect
-      10, // near clipping plane
-      4000 // far clipping plane,
-    );
-
-    // var helper = new THREE.CameraHelper(camera);
-    // scene.add(helper);
-    // compute a target direction
-
-    camera.position.set(-325, 308, 750);
-  }
-
-  function createCameraHelper() {
-    cameraHelper = new THREE.PerspectiveCamera(
-      3, // FOV
-      containerHelp.clientWidth / containerHelp.clientHeight, // aspect
-      10, // near clipping plane
-      1000 // far clipping plane,
-    );
-    cameraHelper.position.set(0, 0, 750);
-  }
-
-  function createControls() {
-    controls = new THREE.OrbitControls(camera, container);
-
-    controls.enableRotate = true;
-    controls.autoRotate = true;
-    controls.cameraPan = true;
-
-    controls.update();
-  }
-
-  function createControlsHelper() {
-    controlsHelper = new THREE.OrbitControls(cameraHelper, containerHelp);
-
-    controlsHelper.enableZoom = false;
-    controlsHelper.enableRotate = false;
-    controlsHelper.autoRotate = false;
-    controlsHelper.cameraPan = false;
-
-    controlsHelper.update();
-  }
-
-  function createLights() {
-    //I added HemisphereLight so we can see the dark side of the planets
-    //Without these additional lights we cannot see anything (only black)
-    ambientLight = new THREE.HemisphereLight(
-      0xffffff, // sky color
-      0x202020, // ground color
-      0.4 // intensity
-    );
-
-    var ambientLightHelper = new THREE.HemisphereLight(
-      0xffffff, // sky color
-      0x202020, // ground color
-      0.4 // intensity
-    );
-
-    // cameraHelper.add(ambientLightHelper);
-    // sceneHelper.add(ambientLightHelper);
-    scene.add(ambientLight);
-
-    //create directional light
-    //These light goes in the center of the sun to shine all directions
-    light = new THREE.PointLight(0xffffff, 14000, 0, 2);
-    //move light
-    light.position.set(0, 0, SUN_INIT_POS_Z);
-    light.castShadow = true; // default false
-    light.shadow.mapSize.width = 1512; // default
-    light.shadow.mapSize.height = 1512; // default
-    light.shadow.camera.near = 0.5; // default
-    light.shadow.camera.far = 4000; // default
-
-    camera.add(light);
-    scene.add(light);
-
-    // The X axis is red. The Y axis is green. The Z axis is blue.
-    axesHelper = new THREE.AxesHelper(1000);
-    scene.add(axesHelper);
-
-    //Create a helper for the shadow camera (optional)
-    // var helper = new THREE.CameraHelper(light.shadow.camera);
-    // scene.add(helper);
-  }
-
-  function createMeshesHelper() {
+  function setCanvasHelper() {
     //create and set position of canvasOpenHelp (Help Icon on left bottom)
     canvasOpenHelp.style.bottom = canvasOpenHelpBottom;
     canvasOpenHelp.style.left = canvasOpenHelpLeft;
@@ -277,81 +194,119 @@ function MAIN() {
     canvasHelp.style.bottom = "0px";
     //canvasHelpe for first time is hidden
     canvasHelp.style.height = "0px";
-
-    // var geometry = new THREE.PlaneGeometry(
-    //   containerHelp.clientWidth + 800,
-    //   containerHelp.clientHeight,
-    //   64
-    // );
-    // var material = new THREE.MeshBasicMaterial({
-    //   color: 0xffffff,
-    //   transparent: true,
-    //   opacity: 0.5
-    // });
-    // var plane = new THREE.Mesh(geometry, material);
-    // plane.rotation.z = 1.5708;
-    // //plane.position.set(0, container.clientHeight - containerHelp.clientHeight, 0);
-
-    // sceneHelper.add(plane);
   }
 
   function createMeshes() {
-    const sunSphere = new THREE.SphereBufferGeometry(
+    const textureLoader = new THREE.TextureLoader(manager);
+
+    skybox_group = new SkyDome(Paths.sky_dome, 1e8, textureLoader).addSkyDome();
+
+    sunMesh = new CreatePlanet(textureLoader).createPlanet(
+      MeshsKinds.meshKind[0],
+      true,
+      false,
+      SUN_INIT_POS_X,
+      SUN_INIT_POS_Y,
+      SUN_INIT_POS_Z,
       sunRadius,
       widthSegments,
-      heightSegments
+      heightSegments,
+      true,
+      null,
+      null,
+      PlanetsURL.SUN,
+      null,
+      null,
+      0xffffff,
+      MapKinds.mapKind[2]
     );
-    sunSphere.castShadow = true; //default is false
 
-    const textureLoader = new THREE.TextureLoader();
-    const sunTexture = textureLoader.load("https://i.ibb.co/3srcxqp/Sol.jpg");
-    sunTexture.encoding = THREE.sRGBEncoding;
-    sunTexture.anisotropy = 16;
+    // const sunSphere = new THREE.SphereBufferGeometry(
+    //   sunRadius,
+    //   widthSegments,
+    //   heightSegments
+    // );
+    // sunSphere.castShadow = true; //default is false
 
-    const sunMaterial = new THREE.MeshStandardMaterial({
-      side: THREE.DoubleSide,
-      emissive: 0xffffff,
-      emissiveMap: sunTexture,
-      roughness: 1,
-      normalScale: new THREE.Vector2(4, 4),
-    });
-    sunMesh = new THREE.Mesh(sunSphere, sunMaterial);
-    sunMesh.position.set(SUN_INIT_POS_X, SUN_INIT_POS_Y, SUN_INIT_POS_Z);
+    // const sunTexture = textureLoader.load(PlanetsURL.SUN);
+    // sunTexture.encoding = THREE.sRGBEncoding;
+    // sunTexture.anisotropy = 16;
+
+    // const sunMaterial = new THREE.MeshStandardMaterial({
+    //   side: THREE.DoubleSide,
+    //   emissive: 0xffffff,
+    //   emissiveMap: sunTexture,
+    //   roughness: 1,
+    //   normalScale: new THREE.Vector2(4, 4),
+    // });
+    // sunMesh = new THREE.Mesh(sunSphere, sunMaterial);
+    // sunMesh.position.set(SUN_INIT_POS_X, SUN_INIT_POS_Y, SUN_INIT_POS_Z);
 
     ////////////////////MERCURY///////////////////////////////////
-
-    const mercurySphere = new THREE.SphereBufferGeometry(
-      mercuryRadius,
-      widthSegments,
-      heightSegments
-    );
-    const mercuryMaterial = new THREE.MeshStandardMaterial({
-      map: new THREE.TextureLoader().load(
-        "https://i.ibb.co/Z2qdm1M/2k-mercury.jpg"
-      ),
-      bumpMap: new THREE.TextureLoader().load(
-        "https://i.ibb.co/2cXm7Ld/mercurybump.jpg"
-      ),
-      bumpScale: 0.002,
-      roughness: 1,
-    });
-
     var mercuryCenterPosition =
       SUN_INIT_POS_X +
       SUNSCALE_RADIUS +
       mercuryRadius +
       MERCURY_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
 
-    mercuryMesh = new THREE.Mesh(mercurySphere, mercuryMaterial);
-    mercuryMesh.position.set(mercuryCenterPosition, 0, 0);
-
+    mercuryMesh = new CreatePlanet(textureLoader).createPlanet(
+      MeshsKinds.meshKind[0],
+      true,
+      false,
+      mercuryCenterPosition,
+      0,
+      0,
+      mercuryRadius,
+      widthSegments,
+      heightSegments,
+      false,
+      PlanetsURL.MERCURY_MAP,
+      null,
+      null,
+      null,
+      PlanetsURL.MERCURY_BUMP,
+      null,
+      MapKinds.mapKind[0] + MapKinds.mapKind[4]
+    );
     //draw planet orbit line
     mercuryoOrbitPathMesh = drawEllipseOrbitPath(
       mercuryCenterPosition,
       0xffffff
     );
-
     mercuryAstronomicalUnitFactor = mercuryCenterPosition;
+
+    // const mercurySphere = new THREE.SphereBufferGeometry(
+    //   mercuryRadius,
+    //   widthSegments,
+    //   heightSegments
+    // );
+    // const mercuryMaterial = new THREE.MeshStandardMaterial({
+    //   map: new THREE.TextureLoader().load(
+    //     "https://i.ibb.co/Z2qdm1M/2k-mercury.jpg"
+    //   ),
+    //   bumpMap: new THREE.TextureLoader().load(
+    //     "https://i.ibb.co/2cXm7Ld/mercurybump.jpg"
+    //   ),
+    //   bumpScale: 0.002,
+    //   roughness: 1,
+    // });
+
+    // var mercuryCenterPosition =
+    //   SUN_INIT_POS_X +
+    //   SUNSCALE_RADIUS +
+    //   mercuryRadius +
+    //   MERCURY_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
+
+    // mercuryMesh = new THREE.Mesh(mercurySphere, mercuryMaterial);
+    // mercuryMesh.position.set(mercuryCenterPosition, 0, 0);
+
+    // //draw planet orbit line
+    // mercuryoOrbitPathMesh = drawEllipseOrbitPath(
+    //   mercuryCenterPosition,
+    //   0xffffff
+    // );
+
+    // mercuryAstronomicalUnitFactor = mercuryCenterPosition;
 
     ///////////////VENUS////////////////////////////////////////
 
@@ -407,6 +362,7 @@ function MAIN() {
         "https://i.ibb.co/LgKKt9G/Earth-Spec.png"
       ),
       normalScale: new THREE.Vector2(6, 6),
+      specular: new THREE.Color("grey"),
     });
     earthMaterial.anisotropy = 16;
     earthMaterial.encoding = THREE.sRGBEncoding;
@@ -575,7 +531,7 @@ function MAIN() {
       uranusRadius +
       URANUS_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
 
-    var uranusMaterial = new THREE.MeshPhongMaterial({
+    var uranusMaterial = new THREE.MeshBasicMaterial({
       map: textureLoader.load("https://i.ibb.co/SsPvzx0/uranusmap.jpg"),
     });
     uranusMesh = new THREE.Mesh(uranusSphere, uranusMaterial);
@@ -620,7 +576,6 @@ function MAIN() {
     uranusOrbitPathMesh = drawEllipseOrbitPath(uranusCenterPosition, 0xffffff);
     uranusAstronomicalUnitFactor = uranusCenterPosition;
     uranusRingMesh.position.x = uranusMesh.position.x;
-    ///////////////////////////////////////////////////////////////
 
     //////////////////////////NEPTUNO ///////////////////////////
 
@@ -636,7 +591,7 @@ function MAIN() {
       neptunoRadius +
       NEPTUNO_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
 
-    var neptunoMaterial = new THREE.MeshPhongMaterial({
+    var neptunoMaterial = new THREE.MeshBasicMaterial({
       map: textureLoader.load("https://i.ibb.co/DtfRtw5/neptunemap.jpg"),
     });
     neptunoMesh = new THREE.Mesh(neptunoSphere, neptunoMaterial);
@@ -653,19 +608,7 @@ function MAIN() {
 
     ///////////////////////////////////////////////////////////////
 
-    //Create a plane that receives shadows (but does not cast them)
-    // var planeGeometry = new THREE.PlaneBufferGeometry(40, 40, 52, 52);
-    // var planeMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
-    // var plane = new THREE.Mesh(planeGeometry, planeMaterial);
-
-    // plane.position.y = -10;
-    // plane.rotation.y = 0;
-    // plane.rotation.x = 5;
-    // plane.rotation.z = 16;
-    // plane.receiveShadow = false;
-
-    //scene.add(plane);
-
+    scene.add(skybox_group);
     scene.add(sunMesh);
     scene.add(venusMesh);
     scene.add(mercuryMesh);
@@ -678,53 +621,6 @@ function MAIN() {
     scene.add(uranusMesh);
     scene.add(uranusRingMesh);
     scene.add(neptunoMesh);
-  }
-
-  function createRenderer() {
-    renderer = new THREE.WebGLRenderer({
-      antialias: true,
-    });
-    renderer.setSize(container.clientWidth, container.clientHeight);
-
-    renderer.setPixelRatio(window.devicePixelRatio);
-
-    renderer.gammaFactor = 2.2;
-    // renderer.gammaOutput = true;
-    renderer.outputEncoding = THREE.GammaEncoding;
-
-    renderer.gammaOutput = true;
-    renderer.toneMapping = THREE.ReinhardToneMapping;
-
-    renderer.physicallyCorrectLights = true;
-
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-    container.appendChild(renderer.domElement);
-  }
-
-  function createRendererHelp() {
-    rendererHelp = new THREE.WebGLRenderer({
-      antialias: true,
-    });
-
-    rendererHelp.setSize(containerHelp.clientWidth, containerHelp.clientHeight);
-
-    rendererHelp.setPixelRatio(window.devicePixelRatio);
-
-    rendererHelp.gammaFactor = 2.2;
-
-    rendererHelp.outputEncoding = THREE.GammaEncoding;
-
-    rendererHelp.gammaOutput = true;
-    rendererHelp.toneMapping = THREE.ReinhardToneMapping;
-
-    rendererHelp.physicallyCorrectLights = true;
-
-    rendererHelp.shadowMap.enabled = true;
-    rendererHelp.shadowMap.type = THREE.PCFSoftShadowMap;
-
-    containerHelp.appendChild(rendererHelp.domElement);
   }
 
   // perform any updates to the scene, called once per frame
@@ -874,19 +770,9 @@ function MAIN() {
     ////////////////////////////////////////////////////////////////////
   }
 
-  function updateHelper() {}
-
   // render, or 'draw a still image', of the scene
   function render() {
-    // camera.up = new THREE.Vector3(10, 10, 10);
-    // camera.lookAt(neptunoMesh.position);
     renderer.render(scene, camera);
-  }
-  // render, or 'draw a still image', of the scene
-  function renderHelp() {
-    // camera.up = new THREE.Vector3(10, 10, 10);
-    // camera.lookAt(neptunoMesh.position);
-    rendererHelp.render(sceneHelper, cameraHelper);
   }
 
   // a function that will be called every time the window gets resized.
@@ -894,17 +780,22 @@ function MAIN() {
   function onWindowResize() {
     // set the aspect ratio to match the new browser window aspect ratio
     camera.aspect = container.clientWidth / container.clientHeight;
-    // cameraHelper.aspect = containerHelp.clientWidth / containerHelp.clientHeight;
     // update the camera's frustum
     camera.updateProjectionMatrix();
-    // cameraHelper.updateProjectionMatrix();
     // update the size of the renderer AND the canvas
     renderer.setSize(container.clientWidth, container.clientHeight);
-    // rendererHelp.setSize(containerHelp.clientWidth, containerHelp.clientHeight);
+  }
+
+  function resetCameraPosition() {
+    //r = reset camera position
+    console.log(controls);
+    controls.reset();
+    camera.position.set(-35, 38, -55);
+    SIMULATION_SPEED_ORBIT = dataControls.Orbit_Speed;
   }
 
   function onKeyDown(evt) {
-    // console.log(evt);
+    console.log(evt);
 
     if (evt.keyCode === 79) {
       //o pause or play rotation planet
@@ -922,60 +813,60 @@ function MAIN() {
       }
     } else if (evt.keyCode === 82) {
       //r = reset camera position
-      controls.reset();
-      camera.position.set(-325, 308, 750);
+      resetCameraPosition();
+    } else if (evt.keyCode === 65) {
+      //a
 
-      SIMULATION_SPEED_ORBIT = dataControls.Orbit_Speed;
+      camera.position.set(marsMesh.position.x, 20, marsMesh.position.z + 30);
+      camera.lookAt(marsMesh.position);
     } else if (evt.keyCode === 74) {
       //Jupyter
-      camera.position.x = jupyterMesh.position.x - 50;
-      camera.position.y = 50;
-      camera.position.z = jupyterMesh.position.z + 200;
+
+      camera.position.set(
+        jupyterMesh.position.x,
+        20,
+        jupyterMesh.position.z + 30
+      );
+
       camera.lookAt(jupyterMesh.position);
     } else if (evt.keyCode === 77) {
       //tecla m
       camera.position.x = mercuryMesh.position.x;
-      camera.position.y = 50;
-      camera.position.z = mercuryMesh.position.z + 100;
+      camera.position.y = 20;
+      camera.position.z = mercuryMesh.position.z + 10;
       camera.lookAt(mercuryMesh.position);
     } else if (evt.keyCode === 78) {
       //tecla n
-      camera.position.x = neptunoMesh.position.x - 50;
-      camera.position.y = 50;
+
+      camera.position.x = neptunoMesh.position.x;
+      camera.position.y = 20;
       camera.position.z = neptunoMesh.position.z;
       camera.lookAt(neptunoMesh.position);
     } else if (evt.keyCode === 83) {
       //tecla s
-      camera.position.x = saturnMesh.position.x - 50;
-      camera.position.y = 50;
-      camera.position.z = saturnMesh.position.z + 200;
+      camera.position.x = saturnMesh.position.x - 10;
+      camera.position.y = 20;
+      camera.position.z = saturnMesh.position.z + 30;
       camera.lookAt(saturnMesh.position);
     } else if (evt.keyCode === 85) {
       //tecla u
-      camera.position.x = uranusMesh.position.x - 50;
-      camera.position.y = 50;
-      camera.position.z = uranusMesh.position.z + 200;
+      camera.position.x = uranusMesh.position.x;
+      camera.position.y = 10;
+      camera.position.z = uranusMesh.position.z + 20;
       camera.lookAt(uranusMesh.position);
     } else if (evt.keyCode === 86) {
       // tecla v
 
       camera.position.x = venusMesh.position.x;
-      camera.position.y = 50;
-      camera.position.z = venusMesh.position.z + 100;
+      camera.position.y = 10;
+      camera.position.z = venusMesh.position.z + 20;
       camera.lookAt(venusMesh.position);
     } else if (evt.keyCode === 69) {
       //tecla e
 
-      // controls.target = new THREE.Vector3(
-      //   earthMesh.position.x,
-      //   50,
-      //   earthMesh.position.z + 100
-      // );
-      // controls.update();
-
-      camera.position.x = earthMesh.position.x;
-      camera.position.y = 50;
-      camera.position.z = earthMesh.position.z + 100;
+      camera.position.x = earthMesh.position.x + 10;
+      camera.position.y = 10;
+      camera.position.z = earthMesh.position.z;
       camera.lookAt(earthMesh.position);
 
       SIMULATION_SPEED_ORBIT = dataControls.Orbit_Speed;
@@ -992,12 +883,9 @@ function MAIN() {
     setOpacityAnime(60, true);
   }
 
-  function onMouseHelpIconOut() {
-    //setOpacityAnime(100, false);
-  }
+  function onMouseHelpIconOut() {}
 
   function onformattedHelpOver() {
-    // canvasHelp.style.height = "0px";
     setOpacityAnime(100, false);
   }
 
@@ -1088,7 +976,7 @@ function MAIN() {
 
   function createSpeedMenu() {
     let dataLighting = {
-      Hemisphere_Light: true,
+      Ambient_Light: 0.4,
       Sun_Light: 14,
     };
     let visibleObjects = {
@@ -1097,6 +985,12 @@ function MAIN() {
     let objectsHelper = {
       axisHelper: true,
     };
+
+    var actions = new (function () {
+      this.Reset_Scene = function () {
+        resetCameraPosition();
+      };
+    })();
 
     var gui = new dat.GUI();
 
@@ -1123,13 +1017,13 @@ function MAIN() {
         });
       }
     });
+    folderSpeed.add(actions, "Reset_Scene");
 
     var folderSpeedLighting = gui.addFolder("Lighting settings");
     folderSpeedLighting
-      .add(dataLighting, "Hemisphere_Light")
+      .add(dataLighting, "Ambient_Light", 0, 1)
       .onChange(function (value) {
-        if (value) scene.add(ambientLight);
-        else scene.remove(ambientLight);
+        ambientLight.intensity = value;
       });
 
     var folderSpeedSunLighting = gui.addFolder("Sun Light settings");
@@ -1187,12 +1081,9 @@ function MAIN() {
 }
 
 try {
-  window.onload = function () {
-    setInterval(() => {}, 500);
-    MAIN();
-    loadScene.style.display = "none";
-  };
+  //window.onload = function () {
+  MAIN();
+  //};
 } catch (e) {
-  loadScene.style.display = "none";
   console.log(e);
 }

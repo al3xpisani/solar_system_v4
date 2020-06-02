@@ -171,7 +171,10 @@ var Mercury_Info = {
   ARGUMENT_OF_PERIAPSIS: 77.45,
   MEAN_ANAMOLY_EPOCH: 252.25,
   BODY_NAME: "Mercury",
-  TEXTURE: "./textures/mercury.jpg",
+  TEXTURE_MAP: "",
+  TEXTURE_BUMP_MAP: "",
+  TEXTURE_NORMAL_MAP: "",
+  TEXTURE_SPECULAR_MAP: "",
 };
 
 //    LONGITUDE_ASCENDING_NODE: 76.68,
@@ -188,7 +191,10 @@ var Venus_Info = {
   ARGUMENT_OF_PERIAPSIS: 131.53,
   MEAN_ANAMOLY_EPOCH: 181.98,
   BODY_NAME: "Venus",
-  TEXTURE: "./textures/venus.jpg",
+  TEXTURE_MAP: "",
+  TEXTURE_BUMP_MAP: "",
+  TEXTURE_NORMAL_MAP: "",
+  TEXTURE_SPECULAR_MAP: "",
 };
 
 var Earth_Info = {
@@ -202,7 +208,10 @@ var Earth_Info = {
   ARGUMENT_OF_PERIAPSIS: 102.95,
   MEAN_ANAMOLY_EPOCH: 100.46,
   BODY_NAME: "Earth",
-  TEXTURE: "./textures/earth_atmos_4096.jpg",
+  TEXTURE_MAP: "",
+  TEXTURE_BUMP_MAP: "",
+  TEXTURE_NORMAL_MAP: "",
+  TEXTURE_SPECULAR_MAP: "",
 };
 
 var Moon_Info = {
@@ -217,7 +226,10 @@ var Moon_Info = {
   MEAN_ANAMOLY_EPOCH: 0,
   CENTRAL_MASS: 5.972e24,
   BODY_NAME: "Moon",
-  TEXTURE: "./textures/moon_map.jpg",
+  TEXTURE_MAP: "",
+  TEXTURE_BUMP_MAP: "",
+  TEXTURE_NORMAL_MAP: "",
+  TEXTURE_SPECULAR_MAP: "",
 };
 
 var Mars_Info = {
@@ -231,7 +243,10 @@ var Mars_Info = {
   ARGUMENT_OF_PERIAPSIS: 336.041,
   MEAN_ANAMOLY_EPOCH: 355.45,
   BODY_NAME: "Mars",
-  TEXTURE: "./textures/mars.jpg",
+  TEXTURE_MAP: "",
+  TEXTURE_BUMP_MAP: "",
+  TEXTURE_NORMAL_MAP: "",
+  TEXTURE_SPECULAR_MAP: "",
 };
 
 var Jupiter_Info = {
@@ -245,7 +260,10 @@ var Jupiter_Info = {
   ARGUMENT_OF_PERIAPSIS: 14.75,
   MEAN_ANAMOLY_EPOCH: 34.4,
   BODY_NAME: "Jupiter",
-  TEXTURE: "./textures/jupiter.jpg",
+  TEXTURE_MAP: "",
+  TEXTURE_BUMP_MAP: "",
+  TEXTURE_NORMAL_MAP: "",
+  TEXTURE_SPECULAR_MAP: "",
 };
 
 var Saturn_Info = {
@@ -259,7 +277,10 @@ var Saturn_Info = {
   ARGUMENT_OF_PERIAPSIS: 92.43,
   MEAN_ANAMOLY_EPOCH: 49.94,
   BODY_NAME: "Saturn",
-  TEXTURE: "./textures/saturnmap.jpg",
+  TEXTURE_MAP: "",
+  TEXTURE_BUMP_MAP: "",
+  TEXTURE_NORMAL_MAP: "",
+  TEXTURE_SPECULAR_MAP: "",
 };
 
 var Uranus_Info = {
@@ -273,7 +294,10 @@ var Uranus_Info = {
   ARGUMENT_OF_PERIAPSIS: 170.964,
   MEAN_ANAMOLY_EPOCH: 313.23,
   BODY_NAME: "Uranus",
-  TEXTURE: "./textures/uranusmap.jpg",
+  TEXTURE_MAP: "",
+  TEXTURE_BUMP_MAP: "",
+  TEXTURE_NORMAL_MAP: "",
+  TEXTURE_SPECULAR_MAP: "",
 };
 
 var Neptune_Info = {
@@ -287,7 +311,10 @@ var Neptune_Info = {
   ARGUMENT_OF_PERIAPSIS: 44.97,
   MEAN_ANAMOLY_EPOCH: 304.88,
   BODY_NAME: "Neptune",
-  TEXTURE: "./textures/neptunemap.jpg",
+  TEXTURE_MAP: "",
+  TEXTURE_BUMP_MAP: "",
+  TEXTURE_NORMAL_MAP: "",
+  TEXTURE_SPECULAR_MAP: "",
 };
 
 var Pluto_Info = {
@@ -301,5 +328,8 @@ var Pluto_Info = {
   ARGUMENT_OF_PERIAPSIS: 224.067,
   MEAN_ANAMOLY_EPOCH: 0,
   BODY_NAME: "Pluto",
-  TEXTURE: "./textures/plutobump2k.jpg",
+  TEXTURE_MAP: "",
+  TEXTURE_BUMP_MAP: "",
+  TEXTURE_NORMAL_MAP: "",
+  TEXTURE_SPECULAR_MAP: "",
 };
