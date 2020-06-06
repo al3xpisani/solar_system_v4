@@ -9,7 +9,7 @@ var Renderer = function (container) {
   renderer.setPixelRatio(window.devicePixelRatio);
 
   //Influencia na coloração da imagem de fundo
-  // renderer.gammaFactor = 20.1;
+  // renderer.gammaFactor = 2.1;
   // renderer.outputEncoding = THREE.GammaEncoding;
   // renderer.gammaOutput = true;
 

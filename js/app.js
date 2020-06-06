@@ -10,9 +10,19 @@ import {
   MeshsKinds,
   MapKinds,
   PlanetsRings,
+  PlanetNames,
+  PlanetScales,
+  PlanetsConstSize,
 } from "../constants/Constants.js";
-import { CreatePlanet } from "../Planets/createPlanets.js";
+import {
+  CreatePlanet,
+  AdjustPlanetLocation,
+} from "../Planets/createPlanets.js";
+
 var manager;
+var Mercury, Venus, Earth, Moon, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto;
+var planets = [];
+var orbit_outlines = new THREE.Object3D();
 
 function MAIN() {
   manager = new LoadingManager().setLoadManager("loadbar", "loadpg");
@@ -35,6 +45,8 @@ function MAIN() {
   let controls;
   let renderer;
   let scene;
+  let textureLoader;
+  let showSpriteText = false;
 
   let sunMesh,
     earthMesh,
@@ -65,7 +77,7 @@ function MAIN() {
 
   let dataControls = {
     Rotation_Speed: 0.03,
-    Orbit_Speed: 0.03,
+    Orbit_Speed: 22000,
     Stop_Animation: false,
   };
 
@@ -154,13 +166,13 @@ function MAIN() {
 
     scene = new THREE.Scene();
 
-    camera = new Camera(container, 60, 0.1, 3e8, -35, 38, -55);
+    camera = new Camera(container, 60, 0.1, 3e9, -3500, 3800, -5500);
 
     controls = new Controls(
       camera,
       container,
-      0,
-      0.8e8,
+      98300,
+      0.8e9,
       true,
       false,
       true,
@@ -168,10 +180,33 @@ function MAIN() {
     );
 
     ambientLight = new Lights(scene).ambientLight(0xffffff, 0.4);
-    light = new Lights(scene).light(0xffffff, 14000, 0, 2, 0, 0, 0, true);
+    // light[0] = new Lights(scene).light(0xffffff, 14000, 0, 2, 0, 0, 0, true);
+    // light[0] = new Lights(scene).lightFromSun(
+    //   0xfffff,
+    //   10e22,
+    //   0,
+    //   2,
+    //   0,
+    //   0,
+    //   0,
+    //   true
+    // );
+    light = new THREE.DirectionalLight(0xffffff, 5);
+    light.position.set(1, 0, 0).normalize();
+    light.color.setHSL(0.1, 0.7, 0.5);
+    light.position.multiplyScalar(30);
+    light.castShadow = true;
+
+    light.target.position.copy(camera.position);
+
+    light.shadow.mapSize.width = 2048; // default
+    light.shadow.mapSize.height = 2048; // default
+    scene.add(light);
+
     axesHelper = new Lights(scene).axesHelper(1000);
 
     createMeshes();
+    generatePlanetData();
     setCanvasHelper();
 
     renderer = new Renderer(container);
@@ -181,6 +216,37 @@ function MAIN() {
       update();
       render();
     });
+  }
+
+  function generatePlanetData() {
+    // Generate Planets. Objects handle physics as well as adding 3d object to scene.
+    Mercury = new Planet_Gen(Mercury_Info, mercuryMesh, false);
+    Venus = new Planet_Gen(Venus_Info, venusMesh, false);
+    Earth = new Planet_Gen(Earth_Info, earthMesh, showSpriteText);
+    Mars = new Planet_Gen(Mars_Info, marsMesh, showSpriteText);
+    Moon = new Planet_Gen(Moon_Info, moonMesh, false);
+    Jupiter = new Planet_Gen(Jupiter_Info, jupyterMesh, showSpriteText);
+    Saturn = new Planet_Gen(Saturn_Info, saturnMesh, showSpriteText);
+    Uranus = new Planet_Gen(Uranus_Info, uranusMesh, showSpriteText);
+    Neptune = new Planet_Gen(Neptune_Info, neptunoMesh, false);
+    //Pluto = new Planet_Gen(Pluto_Info, plutoMesh);
+    //sets Orbital path line
+    planets = [
+      Mercury,
+      Venus,
+      Earth,
+      Moon,
+      Mars,
+      Jupiter,
+      Saturn,
+      Uranus,
+      Neptune,
+    ];
+    orbit_outlines = new CreatePlanet(textureLoader).setOrbitalPlanetLine(
+      planets
+    );
+
+    scene.add(orbit_outlines);
   }
 
   function setCanvasHelper() {
@@ -198,12 +264,13 @@ function MAIN() {
   }
 
   function createMeshes() {
-    const textureLoader = new THREE.TextureLoader(manager);
+    textureLoader = new THREE.TextureLoader(manager);
 
-    skybox_group = new SkyDome(Paths.sky_dome, 1e8, textureLoader).addSkyDome();
+    skybox_group = new SkyDome(Paths.sky_dome, 1e9, textureLoader).addSkyDome();
 
     sunMesh = new CreatePlanet(textureLoader).createPlanet(
       MeshsKinds.meshKind[0],
+      PlanetScales.SUN_SCALE,
       true,
       false,
       null,
@@ -212,10 +279,10 @@ function MAIN() {
       SUN_INIT_POS_X,
       SUN_INIT_POS_Y,
       SUN_INIT_POS_Z,
-      sunRadius,
+      696.35, // SUN_SIZE, //sunRadius,
       widthSegments,
       heightSegments,
-      false,
+      true,
       false,
       null,
       null,
@@ -223,63 +290,66 @@ function MAIN() {
       null,
       null,
       0xffffff,
-      MapKinds.mapKind[2]
+      MapKinds.mapKind[2],
+      PlanetNames.SUN
     );
-
     ////////////////////MERCURY///////////////////////////////////
-    var mercuryCenterPosition =
-      SUN_INIT_POS_X +
-      SUNSCALE_RADIUS +
-      mercuryRadius +
-      MERCURY_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
+    // var mercuryCenterPosition =
+    //   SUN_INIT_POS_X +
+    //   SUNSCALE_RADIUS +
+    //   mercuryRadius +
+    //   MERCURY_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
 
     mercuryMesh = new CreatePlanet(textureLoader).createPlanet(
       MeshsKinds.meshKind[0],
+      PlanetScales.MERCURY_SCALE,
       true,
       false,
       null,
       null,
       null,
-      mercuryCenterPosition,
+      null, //mercuryCenterPosition,
       0,
       0,
-      mercuryRadius,
+      PlanetsConstSize.size, //mercuryRadius,
       widthSegments,
       heightSegments,
       false,
-      false,
+      true,
       PlanetsURL.MERCURY_MAP,
       null,
       null,
       null,
       PlanetsURL.MERCURY_BUMP,
       null,
-      MapKinds.mapKind[0] + MapKinds.mapKind[4]
+      MapKinds.mapKind[0] + MapKinds.mapKind[4],
+      PlanetNames.MERCURY
     );
     //draw planet orbit line
-    mercuryoOrbitPathMesh = new CreatePlanet(
-      textureLoader
-    ).drawEllipseOrbitPath(scene, mercuryCenterPosition, 0xffffff);
-    mercuryAstronomicalUnitFactor = mercuryCenterPosition;
+    // mercuryoOrbitPathMesh = new CreatePlanet(
+    //   textureLoader
+    // ).drawEllipseOrbitPath(scene, mercuryCenterPosition, 0xffffff);
+    //mercuryAstronomicalUnitFactor = mercuryCenterPosition;
 
     ///////////////VENUS////////////////////////////////////////
-    let venusCenterPosition =
-      mercuryMesh.position.x +
-      mercuryRadius +
-      venusRadius +
-      VENUS_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
+    // let venusCenterPosition =
+    //   mercuryMesh.position.x +
+    //   mercuryRadius +
+    //   venusRadius +
+    //   VENUS_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
 
     venusMesh = new CreatePlanet(textureLoader).createPlanet(
       MeshsKinds.meshKind[0],
+      PlanetScales.VENUS_SCALE,
       true,
       false,
       null,
       null,
       null,
-      venusCenterPosition,
+      0, //venusCenterPosition,
       0,
       0,
-      venusRadius,
+      PlanetsConstSize.size, //venusRadius,
       widthSegments,
       heightSegments,
       false,
@@ -290,148 +360,153 @@ function MAIN() {
       null,
       PlanetsURL.VENUS_BUMP,
       null,
-      MapKinds.mapKind[0] + MapKinds.mapKind[4]
+      MapKinds.mapKind[0] + MapKinds.mapKind[4],
+      PlanetNames.VENUS
     );
+
     //draw planet orbit line
-    venusOrbitPathMesh = new CreatePlanet(textureLoader).drawEllipseOrbitPath(
-      scene,
-      venusCenterPosition,
-      0xffffff
-    );
-    venusAstronomicalUnitFactor = venusCenterPosition;
+    // venusOrbitPathMesh = new CreatePlanet(textureLoader).drawEllipseOrbitPath(
+    //   scene,
+    //   venusCenterPosition,
+    //   0xffffff
+    // );
+    // venusAstronomicalUnitFactor = venusCenterPosition;
 
     ///////////////EARTH////////////////////////////////////////
-    const earthSphere = new THREE.SphereBufferGeometry(
-      earthRadius,
-      widthSegments,
-      heightSegments
-    );
 
-    let earthCenterPosition =
-      venusMesh.position.x +
-      venusRadius +
-      earthRadius +
-      EARTH_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
+    // let earthCenterPosition =
+    //   venusMesh.position.x +
+    //   venusRadius +
+    //   earthRadius +
+    //   EARTH_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
 
     earthMesh = new CreatePlanet(textureLoader).createPlanet(
       MeshsKinds.meshKind[2],
+      PlanetScales.EARTH_SCALE,
       true,
       true,
       null,
       null,
       -0.401426,
-      earthCenterPosition,
+      null, //earthCenterPosition,
       0,
       0,
-      earthRadius,
+      PlanetsConstSize.size, //earthRadius,
       widthSegments,
       heightSegments,
       false,
-      true,
+      false,
       PlanetsURL.EARTH_MAP,
       PlanetsURL.EARTH_NORMAL_MAP,
       null,
       PlanetsURL.EARTH_SPECULAR_MAP,
       null,
       null,
-      MapKinds.mapKind[0] + MapKinds.mapKind[1] + MapKinds.mapKind[3]
+      MapKinds.mapKind[0] + MapKinds.mapKind[1] + MapKinds.mapKind[3],
+      PlanetNames.EARTH
     );
+
     //draw earth orbit line
-    earthOrbitPathMesh = new CreatePlanet(textureLoader).drawEllipseOrbitPath(
-      scene,
-      earthCenterPosition,
-      0xffffff
-    );
-    earthAstronomicalUnitFactor = earthCenterPosition;
+    // earthOrbitPathMesh = new CreatePlanet(textureLoader).drawEllipseOrbitPath(
+    //   scene,
+    //   earthCenterPosition,
+    //   0xffffff
+    // );
+    // earthAstronomicalUnitFactor = earthCenterPosition;
 
     /////////////////MOON//////////////////////////////////////////
-    let moonCenterPosition =
-      earthMesh.position.x + earthRadius * 2 + MOON_DISTFROM_EARTH_UA;
+    // let moonCenterPosition =
+    //   earthMesh.position.x + earthRadius * 2 + MOON_DISTFROM_EARTH_UA;
 
     moonMesh = new CreatePlanet(textureLoader).createPlanet(
       MeshsKinds.meshKind[2],
+      PlanetScales.MOON_SCALE,
       true,
       false,
       null,
       null,
       false,
-      moonCenterPosition,
+      null, //moonCenterPosition,
       0,
       0,
-      moonRadius,
+      PlanetsConstSize.size, //moonRadius,
       widthSegments,
       heightSegments,
       true,
-      true,
+      false,
       PlanetsURL.MOON_MAP,
       null,
       null,
       PlanetsURL.MOON_BUMP_MAP,
       null,
       null,
-      MapKinds.mapKind[0] + MapKinds.mapKind[4]
+      MapKinds.mapKind[0] + MapKinds.mapKind[4],
+      PlanetNames.MOON
     );
-    moonAstronomicalUnitFactor = earthRadius * 2 + MOON_DISTFROM_EARTH_UA;
+    //moonAstronomicalUnitFactor = earthRadius * 2 + MOON_DISTFROM_EARTH_UA;
 
     //////////////////////////MARS///////////////////////////
 
-    let marsCenterPosition =
-      earthMesh.position.x +
-      earthRadius +
-      marsRadius +
-      MARS_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
+    // let marsCenterPosition =
+    //   earthMesh.position.x +
+    //   earthRadius +
+    //   marsRadius +
+    //   MARS_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
 
     marsMesh = new CreatePlanet(textureLoader).createPlanet(
       MeshsKinds.meshKind[2],
+      PlanetScales.MARS_SCALE,
       true,
       false,
       null,
       null,
       false,
-      marsCenterPosition,
+      null, //marsCenterPosition,
       0,
       0,
-      marsRadius,
+      PlanetsConstSize.size,
       widthSegments,
       heightSegments,
       true,
-      true,
+      false,
       PlanetsURL.MARS_MAP,
       null,
       null,
       PlanetsURL.MARS_BUMP,
       null,
       null,
-      MapKinds.mapKind[0] + MapKinds.mapKind[4]
+      MapKinds.mapKind[0] + MapKinds.mapKind[4],
+      PlanetNames.MARS
     );
 
     //draw earth orbit line
-    marsOrbitPathMesh = new CreatePlanet(textureLoader).drawEllipseOrbitPath(
-      scene,
-      marsCenterPosition,
-      0xffffff
-    );
-    marsAstronomicalUnitFactor = marsCenterPosition;
+    // marsOrbitPathMesh = new CreatePlanet(textureLoader).drawEllipseOrbitPath(
+    //   scene,
+    //   marsCenterPosition,
+    //   0xffffff
+    // );
+    // marsAstronomicalUnitFactor = marsCenterPosition;
 
     //////////////////////////JUPYTER///////////////////////////
 
-    let jupyterCenterPosition =
-      marsMesh.position.x +
-      marsRadius +
-      jupyterRadius +
-      JUPYTER_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
+    // let jupyterCenterPosition =
+    //   marsMesh.position.x +
+    //   marsRadius +
+    //   jupyterRadius +
+    //   JUPYTER_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
 
     jupyterMesh = new CreatePlanet(textureLoader).createPlanet(
       MeshsKinds.meshKind[2],
+      PlanetScales.JUPYTER_SCALE,
       true,
       false,
       null,
       null,
       false,
-      jupyterCenterPosition,
+      null, //jupyterCenterPosition,
       0,
       0,
-      jupyterRadius,
+      PlanetsConstSize.size, //jupyterRadius,
       widthSegments,
       heightSegments,
       false,
@@ -442,36 +517,38 @@ function MAIN() {
       null,
       null,
       null,
-      MapKinds.mapKind[0]
+      MapKinds.mapKind[0],
+      PlanetNames.JUPYTER
     );
 
     //draw earth orbit line
-    jupyterOrbitPathMesh = new CreatePlanet(textureLoader).drawEllipseOrbitPath(
-      scene,
-      jupyterCenterPosition,
-      0xffffff
-    );
-    jupyterAstronomicalUnitFactor = jupyterCenterPosition;
+    // jupyterOrbitPathMesh = new CreatePlanet(textureLoader).drawEllipseOrbitPath(
+    //   scene,
+    //   jupyterCenterPosition,
+    //   0xffffff
+    // );
+    // jupyterAstronomicalUnitFactor = jupyterCenterPosition;
 
     //////////////////////////SATURN ///////////////////////////
 
-    let saturnCenterPosition =
-      jupyterMesh.position.x +
-      jupyterRadius +
-      saturnRadius +
-      SATURN_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
+    // let saturnCenterPosition =
+    //   jupyterMesh.position.x +
+    //   jupyterRadius +
+    //   saturnRadius +
+    //   SATURN_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
 
     saturnMesh = new CreatePlanet(textureLoader).createPlanet(
       MeshsKinds.meshKind[2],
+      PlanetScales.SATURN_SCALE,
       true,
       true,
       null,
       null,
       -0.471239,
-      saturnCenterPosition,
+      null, //saturnCenterPosition,
       0,
       0,
-      saturnRadius,
+      PlanetsConstSize.size,
       widthSegments,
       heightSegments,
       false,
@@ -482,7 +559,8 @@ function MAIN() {
       null,
       null,
       null,
-      MapKinds.mapKind[0] + MapKinds.mapKind[4]
+      MapKinds.mapKind[0] + MapKinds.mapKind[4],
+      PlanetNames.SATURN
     );
 
     saturnRingMesh = new CreatePlanet(textureLoader).setPlanetRing(
@@ -493,33 +571,34 @@ function MAIN() {
     );
 
     //draw saturn orbit line
-    saturnOrbitPathMesh = new CreatePlanet(textureLoader).drawEllipseOrbitPath(
-      scene,
-      saturnCenterPosition,
-      0xffffff
-    );
-    saturnAstronomicalUnitFactor = saturnCenterPosition;
-    saturnRingMesh.position.x = saturnMesh.position.x;
+    // saturnOrbitPathMesh = new CreatePlanet(textureLoader).drawEllipseOrbitPath(
+    //   scene,
+    //   saturnCenterPosition,
+    //   0xffffff
+    // );
+    // saturnAstronomicalUnitFactor = saturnCenterPosition;
+    // saturnRingMesh.position.x = saturnMesh.position.x;
 
     //////////////////////////URANUS ///////////////////////////
 
-    let uranusCenterPosition =
-      saturnMesh.position.x +
-      saturnRadius +
-      uranusRadius +
-      URANUS_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
+    // let uranusCenterPosition =
+    //   saturnMesh.position.x +
+    //   saturnRadius +
+    //   uranusRadius +
+    //   URANUS_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
 
     uranusMesh = new CreatePlanet(textureLoader).createPlanet(
       MeshsKinds.meshKind[1],
+      PlanetScales.URANUS_SCALE,
       true,
       true,
       null,
       null,
       -1.706932,
-      uranusCenterPosition,
+      null, //uranusCenterPosition,
       0,
       0,
-      uranusRadius,
+      PlanetsConstSize.size,
       widthSegments,
       heightSegments,
       false,
@@ -530,7 +609,8 @@ function MAIN() {
       null,
       null,
       null,
-      MapKinds.mapKind[0]
+      MapKinds.mapKind[0],
+      PlanetNames.URANUS
     );
 
     uranusRingMesh = new CreatePlanet(textureLoader).setPlanetRing(
@@ -541,33 +621,34 @@ function MAIN() {
     );
 
     //draw uranus orbit line
-    uranusOrbitPathMesh = new CreatePlanet(textureLoader).drawEllipseOrbitPath(
-      scene,
-      uranusCenterPosition,
-      0xffffff
-    );
-    uranusAstronomicalUnitFactor = uranusCenterPosition;
-    uranusRingMesh.position.x = uranusMesh.position.x;
+    // uranusOrbitPathMesh = new CreatePlanet(textureLoader).drawEllipseOrbitPath(
+    //   scene,
+    //   uranusCenterPosition,
+    //   0xffffff
+    // );
+    // uranusAstronomicalUnitFactor = uranusCenterPosition;
+    // uranusRingMesh.position.x = uranusMesh.position.x;
 
     //////////////////////////NEPTUNO ///////////////////////////
 
-    let neptunoCenterPosition =
-      uranusMesh.position.x +
-      uranusRadius +
-      neptunoRadius +
-      NEPTUNO_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
+    // let neptunoCenterPosition =
+    //   uranusMesh.position.x +
+    //   uranusRadius +
+    //   neptunoRadius +
+    //   NEPTUNO_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
 
     neptunoMesh = new CreatePlanet(textureLoader).createPlanet(
       MeshsKinds.meshKind[1],
+      PlanetScales.NEPTUNO_SCALE,
       true,
       true,
       null,
       null,
       -0.49410271, //97.8 degrees
-      neptunoCenterPosition,
+      null, //neptunoCenterPosition,
       0,
       0,
-      neptunoRadius,
+      PlanetsConstSize.size, //neptunoRadius, //radius divided by 10.000
       widthSegments,
       heightSegments,
       false,
@@ -578,16 +659,17 @@ function MAIN() {
       null,
       null,
       null,
-      MapKinds.mapKind[0]
+      MapKinds.mapKind[0],
+      PlanetNames.NEPTUNO
     );
 
     //draw neptuno orbit line
-    neptunoOrbitPathMesh = new CreatePlanet(textureLoader).drawEllipseOrbitPath(
-      scene,
-      neptunoCenterPosition,
-      0xffffff
-    );
-    neptunoAstronomicalUnitFactor = neptunoCenterPosition;
+    // neptunoOrbitPathMesh = new CreatePlanet(textureLoader).drawEllipseOrbitPath(
+    //   scene,
+    //   neptunoCenterPosition,
+    //   0xffffff
+    // );
+    // neptunoAstronomicalUnitFactor = neptunoCenterPosition;
 
     ///////////////////////////////////////////////////////////////
 
@@ -606,9 +688,30 @@ function MAIN() {
     scene.add(neptunoMesh);
   }
 
+  function update() {
+    SCALING_TIME = dataControls.Orbit_Speed;
+
+    AdjustPlanetLocation(mercuryMesh, planets[0]);
+
+    AdjustPlanetLocation(venusMesh, planets[1]);
+
+    AdjustPlanetLocation(earthMesh, planets[2]);
+
+    AdjustPlanetLocation(moonMesh, planets[3]);
+
+    AdjustPlanetLocation(marsMesh, planets[4]);
+    AdjustPlanetLocation(jupyterMesh, planets[5]);
+
+    AdjustPlanetLocation(saturnMesh, planets[6]);
+    AdjustPlanetLocation(uranusMesh, planets[7]);
+    AdjustPlanetLocation(neptunoMesh, planets[8]);
+
+    sunMesh.rotation.y += 0.0005;
+  }
+
   // perform any updates to the scene, called once per frame
   // avoid heavy computation here
-  function update() {
+  function update1() {
     //Frame is updated every 60FPS. the render function is called every 60 times a second
     // console.log(SIMULATION_SPEED_ORBIT);
     //////////////////////Define orbit of the planets/////////////////////////
@@ -771,14 +874,14 @@ function MAIN() {
 
   function resetCameraPosition() {
     //r = reset camera position
-    console.log(controls);
+    // console.log(controls);
     controls.reset();
     camera.position.set(-35, 38, -55);
     SIMULATION_SPEED_ORBIT = dataControls.Orbit_Speed;
   }
 
   function onKeyDown(evt) {
-    console.log(evt);
+    // console.log(evt);
 
     if (evt.keyCode === 79) {
       //o pause or play rotation planet
@@ -932,31 +1035,6 @@ function MAIN() {
     return degree * (Math.PI / 180);
   }
 
-  function drawEllipseOrbitPath(planetCenterPosition, hexLineColor) {
-    var curve = new THREE.EllipseCurve(
-      0,
-      0, // ax, aY
-      planetCenterPosition,
-      planetCenterPosition, // xRadius, yRadius
-      0,
-      2 * Math.PI, // aStartAngle, aEndAngle
-      false, // aClockwise
-      0 // aRotation
-    );
-
-    var points = curve.getPoints(100);
-    var geometry = new THREE.BufferGeometry().setFromPoints(points);
-
-    var material = new THREE.LineBasicMaterial({ color: hexLineColor });
-
-    // Create the final object to add to the scene
-    var mesh = new THREE.Line(geometry, material);
-    mesh.rotation.x = 1.5708; //rotaciona o eixo X na mesma direcao do eixo x dos planetas
-    scene.add(mesh);
-
-    return mesh;
-  }
-
   function createSpeedMenu() {
     let dataLighting = {
       Ambient_Light: 0.4,
@@ -986,9 +1064,10 @@ function MAIN() {
         SIMULATION_SPEED_ROTATION = value;
       });
     folderSpeed
-      .add(dataControls, "Orbit_Speed", 0, 3)
+      .add(dataControls, "Orbit_Speed", 0, 40000)
       .onChange(function (value) {
-        SIMULATION_SPEED_ORBIT = value;
+        // SIMULATION_SPEED_ORBIT = value;
+        SCALING_TIME = value;
       });
     folderSpeed.add(dataControls, "Stop_Animation").onChange(function (value) {
       if (value === true) {

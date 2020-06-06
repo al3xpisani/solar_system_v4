@@ -3,10 +3,70 @@ import {
   MapKinds,
   PlanetsRings,
   PlanetsURL,
+  OrbitRadiusMultiplier,
 } from "../constants/Constants.js";
 
+var AdjustPlanetLocation = function (group, planet) {
+  //var y = planet.semimajor_axis_scene()*Math.sin(planet.orbital_inclination*(Math.PI/180)) * Math.sin(planet.true_anamoly());
+  var R =
+    (planet.semimajor_axis_scene() *
+      (1 - Math.pow(planet.orbital_eccentricity, 2))) /
+    (1 +
+      planet.orbital_eccentricity *
+        Math.cos(planet.true_anamoly() + planet.argument_periapsis));
+  group.position.y =
+    R *
+    Math.sin(planet.orbital_inclination) *
+    Math.sin(planet.true_anamoly() + planet.argument_periapsis) *
+    OrbitRadiusMultiplier.Orbit_Radius_Multiplier;
+  group.position.x =
+    R *
+    (Math.cos(planet.longitude_ascending) *
+      Math.cos(planet.true_anamoly() + planet.argument_periapsis) -
+      Math.sin(planet.longitude_ascending) *
+        Math.sin(planet.true_anamoly() + planet.argument_periapsis)) *
+    Math.cos(planet.orbital_inclination) *
+    OrbitRadiusMultiplier.Orbit_Radius_Multiplier;
+  group.position.z =
+    R *
+    (Math.sin(planet.longitude_ascending) *
+      Math.cos(planet.true_anamoly() + planet.argument_periapsis) +
+      Math.cos(planet.longitude_ascending) *
+        Math.sin(planet.true_anamoly() + planet.argument_periapsis)) *
+    Math.cos(planet.orbital_inclination) *
+    OrbitRadiusMultiplier.Orbit_Radius_Multiplier;
+  // return group;
+
+  // if (group.name === "EARTH") {
+  //   console.log("R", R);
+  //   console.log("group.position.x", group.position.x);
+  //   console.log("group.position.y", group.position.y);
+  //   console.log("group.position.z", group.position.z);
+  // }
+};
+
 var CreatePlanet = function (textureLoader) {
-  var mesh;
+  this.setOrbitalPlanetLine = function (planets) {
+    var orbit_outLines = new THREE.Object3D();
+
+    for (var index = 0; index < planets.length; index++) {
+      if (index !== 3) {
+        //different from moon
+        orbit_outLines.add(
+          CreateOrbitalLine(
+            planets[index].semimajor_axis_scene(),
+            planets[index].semiminor_axis_scene(),
+            planets[index].periapsis_scene(),
+            planets[index].orbital_inclination,
+            planets[index].longitude_ascending,
+            planets[index].argument_periapsis,
+            planets[index].orbital_eccentricity
+          )
+        );
+      }
+    }
+    return orbit_outLines;
+  };
 
   this.drawEllipseOrbitPath = function (
     scene,
@@ -92,6 +152,7 @@ var CreatePlanet = function (textureLoader) {
 
   this.createPlanet = function (
     meshKind,
+    planetScale,
     setInitPos = false,
     setRotation = false,
     rotationx,
@@ -111,7 +172,8 @@ var CreatePlanet = function (textureLoader) {
     planetTextureSpecularMap,
     planetTextureBumpMap,
     emissiveColor,
-    mapKind
+    mapKind,
+    planetName
   ) {
     const planetSphere = new THREE.SphereBufferGeometry(
       radius,
@@ -125,6 +187,8 @@ var CreatePlanet = function (textureLoader) {
     var planetTextureEmissiveMapLoader;
     var planetTextureBumpMapLoader;
 
+    var mesh;
+
     if (mapKind === MapKinds.mapKind[0]) {
       //map
       planetTextureMapLoader = textureLoader.load(planetTextureMap);
@@ -133,18 +197,10 @@ var CreatePlanet = function (textureLoader) {
       planetTextureEmissiveMapLoader = textureLoader.load(
         planetTextureEmissiveMap
       );
-
-      planetTextureEmissiveMapLoader.encoding = THREE.sRGBEncoding;
-      planetTextureEmissiveMapLoader.anisotropy = 16;
     } else if (mapKind === MapKinds.mapKind[0] + MapKinds.mapKind[4]) {
       //map + bumpMap
       planetTextureMapLoader = textureLoader.load(planetTextureMap);
       planetTextureBumpMapLoader = textureLoader.load(planetTextureBumpMap);
-
-      planetTextureMapLoader.encoding = THREE.sRGBEncoding;
-      planetTextureMapLoader.anisotropy = 16;
-      planetTextureBumpMapLoader.encoding = THREE.sRGBEncoding;
-      planetTextureBumpMapLoader.anisotropy = 16;
     } else if (
       mapKind ===
       MapKinds.mapKind[0] + MapKinds.mapKind[1] + MapKinds.mapKind[3]
@@ -155,13 +211,9 @@ var CreatePlanet = function (textureLoader) {
       planetTextureSpecularMapLoader = textureLoader.load(
         planetTextureSpecularMap
       );
-      planetTextureMapLoader.encoding = THREE.sRGBEncoding;
-      planetTextureMapLoader.anisotropy = 16;
-      planetTextureNormalMapLoader.encoding = THREE.sRGBEncoding;
-      planetTextureNormalMapLoader.anisotropy = 16;
-      planetTextureSpecularMapLoader.encoding = THREE.sRGBEncoding;
-      planetTextureSpecularMapLoader.anisotropy = 16;
     }
+    textureLoader.anisotropy = 16;
+    textureLoader.encoding = THREE.sRGBEncoding;
 
     var planetMaterial;
 
@@ -223,18 +275,70 @@ var CreatePlanet = function (textureLoader) {
     }
 
     mesh = new THREE.Mesh(planetSphere, planetMaterial);
-    if (castShadow) mesh.castShadow = castShadow;
-    if (receiveShadow) mesh.receiveShadow = receiveShadow;
 
-    if (setInitPos) mesh.position.set(planetPosX, planetPosY, planetPosZ);
+    if (castShadow) {
+      mesh.castShadow = castShadow;
+    }
+
+    if (receiveShadow) {
+      mesh.receiveShadow = receiveShadow;
+    }
+
+    // if (setInitPos) mesh.position.set(planetPosX, planetPosY, planetPosZ);
+
     if (setRotation) {
       if (rotationz) {
         mesh.rotation.z = rotationz;
       }
     }
-
+    if (planetScale) {
+      mesh.scale.x = planetScale;
+      mesh.scale.y = planetScale;
+      mesh.scale.z = planetScale;
+    }
+    mesh.name = planetName;
     return mesh;
   };
 };
 
-export { CreatePlanet };
+function CreateOrbitalLine(
+  semimajor_axis,
+  semiminor_axis,
+  periapsis,
+  orbital_inclination,
+  longitude_ascending,
+  argument_periapsis,
+  eccentricity
+) {
+  var linematerial = new THREE.LineBasicMaterial({ color: 0x7c7c7c });
+  var linegeometry = new THREE.Geometry();
+
+  for (var i = 0; i < 2 * Math.PI + 0.02; i = i + 0.01) {
+    var R =
+      (semimajor_axis * (1 - Math.pow(eccentricity, 2))) /
+      (1 + eccentricity * Math.cos(i + argument_periapsis));
+    var y =
+      R *
+      Math.sin(i + argument_periapsis) *
+      Math.sin(orbital_inclination) *
+      OrbitRadiusMultiplier.Orbit_Radius_Multiplier;
+    var x =
+      R *
+      (Math.cos(longitude_ascending) * Math.cos(i + argument_periapsis) -
+        Math.sin(longitude_ascending) * Math.sin(i + argument_periapsis)) *
+      Math.cos(orbital_inclination) *
+      OrbitRadiusMultiplier.Orbit_Radius_Multiplier;
+    var z =
+      R *
+      (Math.sin(longitude_ascending) * Math.cos(i + argument_periapsis) +
+        Math.cos(longitude_ascending) * Math.sin(i + argument_periapsis)) *
+      Math.cos(orbital_inclination) *
+      OrbitRadiusMultiplier.Orbit_Radius_Multiplier;
+    linegeometry.vertices.push(new THREE.Vector3(x, y, z));
+  }
+  //console.log("x+y+z", x, y, z);
+  var orbitline = new THREE.Line(linegeometry, linematerial);
+  return orbitline;
+}
+
+export { CreatePlanet, AdjustPlanetLocation };

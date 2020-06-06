@@ -2,6 +2,30 @@ const Paths = {
   sky_dome: "../textures/eso_dark.jpg",
 };
 
+const OrbitRadiusMultiplier = {
+  Orbit_Radius_Multiplier: 100,
+};
+
+const PlanetsConstSize = {
+  size: 5,
+};
+
+var scale = 5000;
+//all values below multiplied by 10.000
+const PlanetScales = {
+  SUN_SCALE: 100,
+  MERCURY_SCALE: scale * Mercury_Info.SIZE,
+  VENUS_SCALE: scale * Venus_Info.SIZE,
+  EARTH_SCALE: scale * Earth_Info.SIZE,
+  MOON_SCALE: scale * Moon_Info.SIZE,
+  MARS_SCALE: scale * Mars_Info.SIZE,
+  JUPYTER_SCALE: scale * Jupiter_Info.SIZE,
+  SATURN_SCALE: scale * Saturn_Info.SIZE,
+  URANUS_SCALE: scale * Uranus_Info.SIZE,
+  NEPTUNO_SCALE: scale * Neptune_Info.SIZE, //needs a extra size to be clear visible
+  PLUTO_SCALE: 1,
+};
+
 const PlanetsRings = {
   URANUS: "URANUS",
   SATURN: "SATURN",
@@ -36,4 +60,28 @@ const PlanetsURL = {
   NEPTUNO_MAP: "https://i.ibb.co/DtfRtw5/neptunemap.jpg",
 };
 
-export { Paths, PlanetsURL, MeshsKinds, MapKinds, PlanetsRings };
+const PlanetNames = {
+  SUN: "SUN",
+  MERCURY: "MERCURY",
+  VENUS: "VENUS",
+  EARTH: "EARTH",
+  MOON: "MOON",
+  MARS: "MARS",
+  JUPYTER: "JUPYTER",
+  SATURN: "SATURN",
+  URANUS: "URANUS",
+  NEPTUNO: "NEPTUNO",
+  PLUTO: "PLUTO",
+};
+
+export {
+  Paths,
+  PlanetsURL,
+  MeshsKinds,
+  MapKinds,
+  PlanetsRings,
+  PlanetNames,
+  OrbitRadiusMultiplier,
+  PlanetScales,
+  PlanetsConstSize,
+};

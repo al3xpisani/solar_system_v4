@@ -70,7 +70,7 @@ function Planet(
 }
 
 // Encapsulates all physical properties of the celestial body. Also handles rendering.
-function Planet_Gen(planet_obj, render_group) {
+function Planet_Gen(planet_obj, render_group, showSpriteText) {
   //This is for ES5 compatability in safari. Would prefer to use default parameters as ES6 defines it but Chrome/Firefox have basic support currently.
   if (planet_obj.MEAN_ANAMOLY_EPOCH === undefined) {
     planet_obj.mean_anamoly_epoch = 0.0;
@@ -95,13 +95,14 @@ function Planet_Gen(planet_obj, render_group) {
   this.name = String(planet_obj.BODY_NAME);
   this.parent_group = render_group;
   this.texture = planet_obj.TEXTURE;
-
   //Create 3D Object to be rendered, and add it to the THREE Object3d group.
-  this.parent_group.add(CreateSphere(this.texture, this.size, 50, this.name));
+  //this.parent_group.add(CreateSphere(this.texture, this.size, 50, this.name));
   //  this.parent_group.add(CreateTransparentSphere(TRANSPARENT_SPHERE_SIZE,50,TRANSPARENT_SPHERE_NAME));
-  this.parent_group.add(
-    CreateSpriteText(this.name, "#ffffff", this.name + "_text", this.size)
-  );
+  if (showSpriteText) {
+    this.parent_group.add(
+      CreateSpriteText(this.name, "#ffffff", this.name + "_text", this.size)
+    );
+  }
 
   // Scales down real values to simulation values and calculates periapsis and apoapsis from associated variables.
   this.semimajor_axis_scene = function () {
@@ -139,6 +140,18 @@ function Planet_Gen(planet_obj, render_group) {
       ) + this.mean_anamoly_epoch
     );
   };
+}
+
+function CreateSpriteText(text, colour, name, offset) {
+  var SpriteText = new THREE_Text2D.SpriteText2D(text, {
+    align: THREE_Text2D.textAlign.center,
+    font: "30px Arial",
+    fillStyle: colour,
+    antialias: true,
+  });
+  SpriteText.position.set(0, offset + 10, 0);
+  SpriteText.name = name;
+  return SpriteText;
 }
 
 // Prototype of planet object. Should hopefully be able to upgrade this to a JSON screne description.

@@ -11,7 +11,7 @@ var Lights = function (scene) {
     return ambientLight;
   };
 
-  this.light = function (
+  this.lightFromSun = function (
     color,
     intensity,
     distance,
@@ -23,14 +23,17 @@ var Lights = function (scene) {
   ) {
     //create directional light
     //These light goes in the center of the sun to shine all directions
-    var light = new THREE.PointLight(color, intensity, distance, decay);
+    var light2;
+    light2[0] = new THREE.PointLight(color, intensity, distance, decay);
     //move light
-    light.position.set(lightPositionX, lightPositionY, lightPositionZ);
-    light.castShadow = castShadow; // default false
-    light.shadow.mapSize.width = 2048; // default
-    light.shadow.mapSize.height = 2048; // default
-    // light.shadow.camera.near = 0.5; // default
-    // light.shadow.camera.far = 4000; // default
+    light2.name = "SUNLIGHT";
+    light2.position.set(lightPositionX, lightPositionY, lightPositionZ);
+    light2.castShadow = castShadow; // default false
+    light2.receiveShadow = false;
+    light2.shadow.mapSize.width = 2048; // default
+    light2.shadow.mapSize.height = 2048; // default
+    // light2.shadow.camera.near = 98300;
+    // light2.shadow.camera.far = 0.8e9; // default
 
     var textureLoader = new THREE.TextureLoader();
 
@@ -72,11 +75,12 @@ var Lights = function (scene) {
     );
     lensflare.position.set(lightPositionX, lightPositionY, lightPositionZ);
 
-    light.add(lensflare);
+    light2[0].add(lensflare);
 
-    scene.add(light);
+    console.log(light2);
+    scene.add(light2);
 
-    return light;
+    return light2;
   };
 
   this.axesHelper = function (width) {

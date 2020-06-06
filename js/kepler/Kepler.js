@@ -5,9 +5,10 @@
 // Credit for a lot of these go to Marc. A. Murison of US Naval Observatory, Washington, DC
 // Link: http://murison.alpheratz.net/dynamics/twobody/KeplerIterations_summary.pdf
 //
+var clock = new THREE.Clock();
 
 var SCALING_TIME = 0.1; // Set by GUI
-const SET_SCALING_TIME = 1; //Equalizer as physics has a tendency to run a bit fast.
+const SET_SCALING_TIME = 10; //Equalizer as physics has a tendency to run a bit fast.
 
 //Calculate orbital period. Because of lack of similar-mass two-body problems, we only take the largest mass in.
 function CalculateN(semimajor_axis, central_mass) {
@@ -23,7 +24,7 @@ function CalculateN(semimajor_axis, central_mass) {
 
 // Uses Three.js clock. Substitute Clock.getElapsedTime with whatever your chosen timing engine is!
 function CalculateMT(n, t) {
-  var Mt = n * Clock.getElapsedTime() * SCALING_TIME * SET_SCALING_TIME;
+  var Mt = n * clock.getElapsedTime() * SCALING_TIME * SET_SCALING_TIME;
   return Mt;
 }
 
