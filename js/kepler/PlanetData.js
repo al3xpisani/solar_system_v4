@@ -149,7 +149,7 @@ function CreateSpriteText(text, colour, name, offset) {
     fillStyle: colour,
     antialias: true,
   });
-  SpriteText.position.set(0, offset + 10, 0);
+  SpriteText.position.set(0, offset + 100, 0);
   SpriteText.name = name;
   return SpriteText;
 }

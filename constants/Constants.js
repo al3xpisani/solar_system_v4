@@ -3,17 +3,17 @@ const Paths = {
 };
 
 const OrbitRadiusMultiplier = {
-  Orbit_Radius_Multiplier: 100,
+  Orbit_Radius_Multiplier: 330,
 };
 
 const PlanetsConstSize = {
-  size: 5,
+  size: 50,
 };
 
-var scale = 5000;
+var scale = 500;
 //all values below multiplied by 10.000
 const PlanetScales = {
-  SUN_SCALE: 100,
+  SUN_SCALE: 0,
   MERCURY_SCALE: scale * Mercury_Info.SIZE,
   VENUS_SCALE: scale * Venus_Info.SIZE,
   EARTH_SCALE: scale * Earth_Info.SIZE,

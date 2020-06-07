@@ -9,9 +9,20 @@ import {
   PlanetsURL,
   MeshsKinds,
   MapKinds,
+  PlanetsRings,
+  PlanetNames,
+  PlanetScales,
+  PlanetsConstSize,
 } from "../constants/Constants.js";
-import { CreatePlanet } from "../Planets/createPlanets.js";
+import {
+  CreatePlanet,
+  AdjustPlanetLocation,
+} from "../Planets/createPlanets.js";
+
 var manager;
+var Mercury, Venus, Earth, Moon, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto;
+var planets = [];
+var orbit_outlines = new THREE.Object3D();
 
 function MAIN() {
   manager = new LoadingManager().setLoadManager("loadbar", "loadpg");
@@ -34,6 +45,8 @@ function MAIN() {
   let controls;
   let renderer;
   let scene;
+  let textureLoader;
+  let showSpriteText = false;
 
   let sunMesh,
     earthMesh,
@@ -64,7 +77,7 @@ function MAIN() {
 
   let dataControls = {
     Rotation_Speed: 0.03,
-    Orbit_Speed: 0.03,
+    Orbit_Speed: 22000,
     Stop_Animation: false,
   };
 
@@ -153,13 +166,13 @@ function MAIN() {
 
     scene = new THREE.Scene();
 
-    camera = new Camera(container, 60, 0.1, 3e8, -35, 38, -55);
+    camera = new Camera(container, 60, 0.1, 3e9, -3500, 3800, -5500);
 
     controls = new Controls(
       camera,
       container,
-      0,
-      0.8e8,
+      98300,
+      0.8e9,
       true,
       false,
       true,
@@ -167,10 +180,12 @@ function MAIN() {
     );
 
     ambientLight = new Lights(scene).ambientLight(0xffffff, 0.4);
-    light = new Lights(scene).light(0xffffff, 14000, 0, 2, 0, 0, 0, true);
+    light = new Lights(scene).lightFromSun(0xffffff, 1e14, 0, 2, 0, 0, 0, true);
+
     axesHelper = new Lights(scene).axesHelper(1000);
 
     createMeshes();
+    generatePlanetData();
     setCanvasHelper();
 
     renderer = new Renderer(container);
@@ -180,6 +195,37 @@ function MAIN() {
       update();
       render();
     });
+  }
+
+  function generatePlanetData() {
+    // Generate Planets. Objects handle physics as well as adding 3d object to scene.
+    Mercury = new Planet_Gen(Mercury_Info, mercuryMesh, false);
+    Venus = new Planet_Gen(Venus_Info, venusMesh, false);
+    Earth = new Planet_Gen(Earth_Info, earthMesh, showSpriteText);
+    Mars = new Planet_Gen(Mars_Info, marsMesh, showSpriteText);
+    Moon = new Planet_Gen(Moon_Info, moonMesh, false);
+    Jupiter = new Planet_Gen(Jupiter_Info, jupyterMesh, showSpriteText);
+    Saturn = new Planet_Gen(Saturn_Info, saturnMesh, showSpriteText);
+    Uranus = new Planet_Gen(Uranus_Info, uranusMesh, showSpriteText);
+    Neptune = new Planet_Gen(Neptune_Info, neptunoMesh, false);
+    //Pluto = new Planet_Gen(Pluto_Info, plutoMesh);
+    //sets Orbital path line
+    planets = [
+      Mercury,
+      Venus,
+      Earth,
+      Moon,
+      Mars,
+      Jupiter,
+      Saturn,
+      Uranus,
+      Neptune,
+    ];
+    orbit_outlines = new CreatePlanet(textureLoader).setOrbitalPlanetLine(
+      planets
+    );
+
+    scene.add(orbit_outlines);
   }
 
   function setCanvasHelper() {
@@ -197,68 +243,57 @@ function MAIN() {
   }
 
   function createMeshes() {
-    const textureLoader = new THREE.TextureLoader(manager);
+    textureLoader = new THREE.TextureLoader(manager);
 
-    skybox_group = new SkyDome(Paths.sky_dome, 1e8, textureLoader).addSkyDome();
+    skybox_group = new SkyDome(Paths.sky_dome, 1e9, textureLoader).addSkyDome();
 
     sunMesh = new CreatePlanet(textureLoader).createPlanet(
       MeshsKinds.meshKind[0],
+      PlanetScales.SUN_SCALE,
       true,
       false,
+      null,
+      null,
+      null,
       SUN_INIT_POS_X,
       SUN_INIT_POS_Y,
       SUN_INIT_POS_Z,
-      sunRadius,
+      696.35, // SUN_SIZE, //sunRadius,
       widthSegments,
       heightSegments,
       true,
+      false,
       null,
       null,
       PlanetsURL.SUN,
       null,
       null,
       0xffffff,
-      MapKinds.mapKind[2]
+      MapKinds.mapKind[2],
+      PlanetNames.SUN
     );
-
-    // const sunSphere = new THREE.SphereBufferGeometry(
-    //   sunRadius,
-    //   widthSegments,
-    //   heightSegments
-    // );
-    // sunSphere.castShadow = true; //default is false
-
-    // const sunTexture = textureLoader.load(PlanetsURL.SUN);
-    // sunTexture.encoding = THREE.sRGBEncoding;
-    // sunTexture.anisotropy = 16;
-
-    // const sunMaterial = new THREE.MeshStandardMaterial({
-    //   side: THREE.DoubleSide,
-    //   emissive: 0xffffff,
-    //   emissiveMap: sunTexture,
-    //   roughness: 1,
-    //   normalScale: new THREE.Vector2(4, 4),
-    // });
-    // sunMesh = new THREE.Mesh(sunSphere, sunMaterial);
-    // sunMesh.position.set(SUN_INIT_POS_X, SUN_INIT_POS_Y, SUN_INIT_POS_Z);
-
     ////////////////////MERCURY///////////////////////////////////
-    var mercuryCenterPosition =
-      SUN_INIT_POS_X +
-      SUNSCALE_RADIUS +
-      mercuryRadius +
-      MERCURY_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
+    // var mercuryCenterPosition =
+    //   SUN_INIT_POS_X +
+    //   SUNSCALE_RADIUS +
+    //   mercuryRadius +
+    //   MERCURY_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
 
     mercuryMesh = new CreatePlanet(textureLoader).createPlanet(
       MeshsKinds.meshKind[0],
+      PlanetScales.MERCURY_SCALE,
       true,
       false,
-      mercuryCenterPosition,
+      null,
+      null,
+      null,
+      null, //mercuryCenterPosition,
       0,
       0,
-      mercuryRadius,
+      PlanetsConstSize.size, //mercuryRadius,
       widthSegments,
       heightSegments,
+      false,
       false,
       PlanetsURL.MERCURY_MAP,
       null,
@@ -266,345 +301,354 @@ function MAIN() {
       null,
       PlanetsURL.MERCURY_BUMP,
       null,
-      MapKinds.mapKind[0] + MapKinds.mapKind[4]
+      MapKinds.mapKind[0] + MapKinds.mapKind[4],
+      PlanetNames.MERCURY
     );
     //draw planet orbit line
-    mercuryoOrbitPathMesh = drawEllipseOrbitPath(
-      mercuryCenterPosition,
-      0xffffff
-    );
-    mercuryAstronomicalUnitFactor = mercuryCenterPosition;
-
-    // const mercurySphere = new THREE.SphereBufferGeometry(
-    //   mercuryRadius,
-    //   widthSegments,
-    //   heightSegments
-    // );
-    // const mercuryMaterial = new THREE.MeshStandardMaterial({
-    //   map: new THREE.TextureLoader().load(
-    //     "https://i.ibb.co/Z2qdm1M/2k-mercury.jpg"
-    //   ),
-    //   bumpMap: new THREE.TextureLoader().load(
-    //     "https://i.ibb.co/2cXm7Ld/mercurybump.jpg"
-    //   ),
-    //   bumpScale: 0.002,
-    //   roughness: 1,
-    // });
-
-    // var mercuryCenterPosition =
-    //   SUN_INIT_POS_X +
-    //   SUNSCALE_RADIUS +
-    //   mercuryRadius +
-    //   MERCURY_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
-
-    // mercuryMesh = new THREE.Mesh(mercurySphere, mercuryMaterial);
-    // mercuryMesh.position.set(mercuryCenterPosition, 0, 0);
-
-    // //draw planet orbit line
-    // mercuryoOrbitPathMesh = drawEllipseOrbitPath(
-    //   mercuryCenterPosition,
-    //   0xffffff
-    // );
-
-    // mercuryAstronomicalUnitFactor = mercuryCenterPosition;
+    // mercuryoOrbitPathMesh = new CreatePlanet(
+    //   textureLoader
+    // ).drawEllipseOrbitPath(scene, mercuryCenterPosition, 0xffffff);
+    //mercuryAstronomicalUnitFactor = mercuryCenterPosition;
 
     ///////////////VENUS////////////////////////////////////////
+    // let venusCenterPosition =
+    //   mercuryMesh.position.x +
+    //   mercuryRadius +
+    //   venusRadius +
+    //   VENUS_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
 
-    const venusSphere = new THREE.SphereBufferGeometry(
-      venusRadius,
+    venusMesh = new CreatePlanet(textureLoader).createPlanet(
+      MeshsKinds.meshKind[0],
+      PlanetScales.VENUS_SCALE,
+      true,
+      false,
+      null,
+      null,
+      null,
+      0, //venusCenterPosition,
+      0,
+      0,
+      PlanetsConstSize.size, //venusRadius,
       widthSegments,
-      heightSegments
+      heightSegments,
+      false,
+      false,
+      PlanetsURL.VENUS_MAP,
+      null,
+      null,
+      null,
+      PlanetsURL.VENUS_BUMP,
+      null,
+      MapKinds.mapKind[0] + MapKinds.mapKind[4],
+      PlanetNames.VENUS
     );
-
-    let venusCenterPosition =
-      mercuryMesh.position.x +
-      mercuryRadius +
-      venusRadius +
-      VENUS_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
-
-    const venusMaterial = new THREE.MeshStandardMaterial({
-      map: new THREE.TextureLoader().load(
-        "https://i.ibb.co/pPPFV0R/venusmap.jpg"
-      ),
-      bumpMap: new THREE.TextureLoader().load(
-        "https://i.ibb.co/Gtw6t8x/venusbump.jpg"
-      ),
-      bumpScale: 0.002,
-      roughness: 1,
-    });
-
-    venusMesh = new THREE.Mesh(venusSphere, venusMaterial);
-    venusMesh.position.set(venusCenterPosition, 0, 0);
 
     //draw planet orbit line
-    venusOrbitPathMesh = drawEllipseOrbitPath(venusCenterPosition, 0xffffff);
-    venusAstronomicalUnitFactor = venusCenterPosition;
+    // venusOrbitPathMesh = new CreatePlanet(textureLoader).drawEllipseOrbitPath(
+    //   scene,
+    //   venusCenterPosition,
+    //   0xffffff
+    // );
+    // venusAstronomicalUnitFactor = venusCenterPosition;
 
     ///////////////EARTH////////////////////////////////////////
-    const earthSphere = new THREE.SphereBufferGeometry(
-      earthRadius,
+
+    // let earthCenterPosition =
+    //   venusMesh.position.x +
+    //   venusRadius +
+    //   earthRadius +
+    //   EARTH_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
+
+    earthMesh = new CreatePlanet(textureLoader).createPlanet(
+      MeshsKinds.meshKind[2],
+      PlanetScales.EARTH_SCALE,
+      true,
+      true,
+      null,
+      null,
+      -0.401426,
+      null, //earthCenterPosition,
+      0,
+      0,
+      PlanetsConstSize.size, //earthRadius,
       widthSegments,
-      heightSegments
+      heightSegments,
+      false,
+      false,
+      PlanetsURL.EARTH_MAP,
+      PlanetsURL.EARTH_NORMAL_MAP,
+      null,
+      PlanetsURL.EARTH_SPECULAR_MAP,
+      null,
+      null,
+      MapKinds.mapKind[0] + MapKinds.mapKind[1] + MapKinds.mapKind[3],
+      PlanetNames.EARTH
     );
 
-    let earthCenterPosition =
-      venusMesh.position.x +
-      venusRadius +
-      earthRadius +
-      EARTH_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
-
-    var earthMaterial = new THREE.MeshPhongMaterial({
-      map: textureLoader.load("https://i.ibb.co/M8wzz6b/Earth.png"),
-      normalMap: textureLoader.load(
-        "https://i.ibb.co/SBLFSV0/Earth-Normal.png"
-      ),
-      specularMap: textureLoader.load(
-        "https://i.ibb.co/LgKKt9G/Earth-Spec.png"
-      ),
-      normalScale: new THREE.Vector2(6, 6),
-      specular: new THREE.Color("grey"),
-    });
-    earthMaterial.anisotropy = 16;
-    earthMaterial.encoding = THREE.sRGBEncoding;
-
-    earthMesh = new THREE.Mesh(earthSphere, earthMaterial);
-    earthMesh.position.set(earthCenterPosition, 0, 0);
-    //simular inclinacao da Terra (radians)
-    earthMesh.rotation.z = -0.401426;
-
-    earthMesh.castShadow = false;
-    earthMesh.receiveShadow = true;
     //draw earth orbit line
-    earthOrbitPathMesh = drawEllipseOrbitPath(earthCenterPosition, 0xffffff);
-    earthAstronomicalUnitFactor = earthCenterPosition;
+    // earthOrbitPathMesh = new CreatePlanet(textureLoader).drawEllipseOrbitPath(
+    //   scene,
+    //   earthCenterPosition,
+    //   0xffffff
+    // );
+    // earthAstronomicalUnitFactor = earthCenterPosition;
 
     /////////////////MOON//////////////////////////////////////////
-    const moonSphere = new THREE.SphereBufferGeometry(
-      moonRadius,
+    // let moonCenterPosition =
+    //   earthMesh.position.x + earthRadius * 2 + MOON_DISTFROM_EARTH_UA;
+
+    moonMesh = new CreatePlanet(textureLoader).createPlanet(
+      MeshsKinds.meshKind[2],
+      PlanetScales.MOON_SCALE,
+      true,
+      false,
+      null,
+      null,
+      false,
+      null, //moonCenterPosition,
+      0,
+      0,
+      PlanetsConstSize.size, //moonRadius,
       widthSegments,
-      heightSegments
+      heightSegments,
+      true,
+      false,
+      PlanetsURL.MOON_MAP,
+      null,
+      null,
+      PlanetsURL.MOON_BUMP_MAP,
+      null,
+      null,
+      MapKinds.mapKind[0] + MapKinds.mapKind[4],
+      PlanetNames.MOON
     );
+    //moonAstronomicalUnitFactor = earthRadius * 2 + MOON_DISTFROM_EARTH_UA;
 
-    let moonCenterPosition =
-      earthMesh.position.x + earthRadius * 2 + MOON_DISTFROM_EARTH_UA;
-
-    var moonMaterial = new THREE.MeshPhongMaterial({
-      map: textureLoader.load("https://i.ibb.co/2cHJLGh/moonmap1k.jpg"),
-      bumpMap: textureLoader.load("https://i.ibb.co/7vDSSZz/moonbump1k.jpg"),
-      bumpScale: 0.002,
-    });
-    moonMaterial.anisotropy = 16;
-    moonMaterial.encoding = THREE.sRGBEncoding;
-
-    moonMesh = new THREE.Mesh(moonSphere, moonMaterial);
-    moonMesh.position.set(moonCenterPosition, 0, 0);
-    moonAstronomicalUnitFactor = earthRadius * 2 + MOON_DISTFROM_EARTH_UA;
-
-    moonMesh.castShadow = true;
-    moonMesh.receiveShadow = true;
     //////////////////////////MARS///////////////////////////
 
-    const marsSphere = new THREE.SphereBufferGeometry(
-      marsRadius,
+    // let marsCenterPosition =
+    //   earthMesh.position.x +
+    //   earthRadius +
+    //   marsRadius +
+    //   MARS_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
+
+    marsMesh = new CreatePlanet(textureLoader).createPlanet(
+      MeshsKinds.meshKind[2],
+      PlanetScales.MARS_SCALE,
+      true,
+      false,
+      null,
+      null,
+      false,
+      null, //marsCenterPosition,
+      0,
+      0,
+      PlanetsConstSize.size,
       widthSegments,
-      heightSegments
+      heightSegments,
+      true,
+      false,
+      PlanetsURL.MARS_MAP,
+      null,
+      null,
+      PlanetsURL.MARS_BUMP,
+      null,
+      null,
+      MapKinds.mapKind[0] + MapKinds.mapKind[4],
+      PlanetNames.MARS
     );
 
-    let marsCenterPosition =
-      earthMesh.position.x +
-      earthRadius +
-      marsRadius +
-      MARS_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
-
-    var marsMaterial = new THREE.MeshPhongMaterial({
-      map: textureLoader.load("https://i.ibb.co/q1XsgSB/marsmap1k.jpg"),
-      bumpMap: textureLoader.load("https://i.ibb.co/QMyJ17w/marsbump1k.jpg"),
-      bumpScale: 0.002,
-    });
-    marsMesh = new THREE.Mesh(marsSphere, marsMaterial);
-    marsMesh.position.set(marsCenterPosition, 0, 0);
-
     //draw earth orbit line
-    marsOrbitPathMesh = drawEllipseOrbitPath(marsCenterPosition, 0xffffff);
-    marsAstronomicalUnitFactor = marsCenterPosition;
+    // marsOrbitPathMesh = new CreatePlanet(textureLoader).drawEllipseOrbitPath(
+    //   scene,
+    //   marsCenterPosition,
+    //   0xffffff
+    // );
+    // marsAstronomicalUnitFactor = marsCenterPosition;
 
     //////////////////////////JUPYTER///////////////////////////
 
-    const jupyterSphere = new THREE.SphereBufferGeometry(
-      jupyterRadius,
+    // let jupyterCenterPosition =
+    //   marsMesh.position.x +
+    //   marsRadius +
+    //   jupyterRadius +
+    //   JUPYTER_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
+
+    jupyterMesh = new CreatePlanet(textureLoader).createPlanet(
+      MeshsKinds.meshKind[2],
+      PlanetScales.JUPYTER_SCALE,
+      true,
+      false,
+      null,
+      null,
+      false,
+      null, //jupyterCenterPosition,
+      0,
+      0,
+      PlanetsConstSize.size, //jupyterRadius,
       widthSegments,
-      heightSegments
+      heightSegments,
+      false,
+      false,
+      PlanetsURL.JUPYTER_MAP,
+      null,
+      null,
+      null,
+      null,
+      null,
+      MapKinds.mapKind[0],
+      PlanetNames.JUPYTER
     );
-
-    let jupyterCenterPosition =
-      marsMesh.position.x +
-      marsRadius +
-      jupyterRadius +
-      JUPYTER_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
-
-    var jupyterMaterial = new THREE.MeshPhongMaterial({
-      map: textureLoader.load("https://i.ibb.co/rmJWC8m/jupitermap.jpg"),
-    });
-    jupyterMesh = new THREE.Mesh(jupyterSphere, jupyterMaterial);
-    jupyterMesh.position.set(jupyterCenterPosition, 0, 0);
 
     //draw earth orbit line
-    jupyterOrbitPathMesh = drawEllipseOrbitPath(
-      jupyterCenterPosition,
-      0xffffff
-    );
-    jupyterAstronomicalUnitFactor = jupyterCenterPosition;
-
-    ///////////////////////////////////////////////////////////////
+    // jupyterOrbitPathMesh = new CreatePlanet(textureLoader).drawEllipseOrbitPath(
+    //   scene,
+    //   jupyterCenterPosition,
+    //   0xffffff
+    // );
+    // jupyterAstronomicalUnitFactor = jupyterCenterPosition;
 
     //////////////////////////SATURN ///////////////////////////
 
-    const saturnSphere = new THREE.SphereBufferGeometry(
-      saturnRadius,
+    // let saturnCenterPosition =
+    //   jupyterMesh.position.x +
+    //   jupyterRadius +
+    //   saturnRadius +
+    //   SATURN_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
+
+    saturnMesh = new CreatePlanet(textureLoader).createPlanet(
+      MeshsKinds.meshKind[2],
+      PlanetScales.SATURN_SCALE,
+      true,
+      true,
+      null,
+      null,
+      -0.471239,
+      null, //saturnCenterPosition,
+      0,
+      0,
+      PlanetsConstSize.size,
       widthSegments,
-      heightSegments
+      heightSegments,
+      false,
+      false,
+      PlanetsURL.SATURN_MAP,
+      null,
+      null,
+      null,
+      null,
+      null,
+      MapKinds.mapKind[0] + MapKinds.mapKind[4],
+      PlanetNames.SATURN
     );
 
-    let saturnCenterPosition =
-      jupyterMesh.position.x +
-      jupyterRadius +
-      saturnRadius +
-      SATURN_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
-
-    var saturnMaterial = new THREE.MeshPhongMaterial({
-      map: textureLoader.load("https://i.ibb.co/HqgCYCD/saturnmap.jpg"),
-    });
-    saturnMesh = new THREE.Mesh(saturnSphere, saturnMaterial);
-    saturnMesh.rotation.z = -0.471239;
-    saturnMesh.position.set(saturnCenterPosition, 0, 0);
-
-    //Draw Saturn Ring
-    const saturnInnerRadius = saturnRadius + 1;
-    const saturnOuterRadius = saturnRadius + 5;
-    const saturnThetaSegments = 60;
-
-    const saturnRingGeometry = new THREE.RingBufferGeometry(
-      saturnInnerRadius,
-      saturnOuterRadius,
-      saturnThetaSegments
+    saturnRingMesh = new CreatePlanet(textureLoader).setPlanetRing(
+      PlanetsRings.SATURN,
+      saturnRadius,
+      1.5708,
+      -0.45
     );
-
-    var pos = saturnRingGeometry.attributes.position;
-    var v3 = new THREE.Vector3();
-    for (let i = 0; i < pos.count; i++) {
-      v3.fromBufferAttribute(pos, i);
-      saturnRingGeometry.attributes.uv.setXY(
-        i,
-        v3.length() < saturnInnerRadius + 1 ? 0 : 1,
-        1
-      );
-    }
-
-    var saturnRingMaterial = new THREE.MeshBasicMaterial({
-      map: textureLoader.load("https://i.ibb.co/LQwTkmy/saturnringpattern.gif"),
-      color: 0xffffff,
-      side: THREE.DoubleSide,
-      transparent: true,
-      opacity: 0.8,
-    });
-
-    saturnRingMesh = new THREE.Mesh(saturnRingGeometry, saturnRingMaterial);
-    saturnRingMesh.rotation.x = 1.5708; //rotaciona o eixo X na mesma direcao do eixo x dos planetas
-    saturnRingMesh.rotation.y = -0.45;
 
     //draw saturn orbit line
-    saturnOrbitPathMesh = drawEllipseOrbitPath(saturnCenterPosition, 0xffffff);
-    saturnAstronomicalUnitFactor = saturnCenterPosition;
-    saturnRingMesh.position.x = saturnMesh.position.x;
+    // saturnOrbitPathMesh = new CreatePlanet(textureLoader).drawEllipseOrbitPath(
+    //   scene,
+    //   saturnCenterPosition,
+    //   0xffffff
+    // );
+    // saturnAstronomicalUnitFactor = saturnCenterPosition;
+    // saturnRingMesh.position.x = saturnMesh.position.x;
 
     //////////////////////////URANUS ///////////////////////////
 
-    const uranusSphere = new THREE.SphereBufferGeometry(
-      uranusRadius,
+    // let uranusCenterPosition =
+    //   saturnMesh.position.x +
+    //   saturnRadius +
+    //   uranusRadius +
+    //   URANUS_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
+
+    uranusMesh = new CreatePlanet(textureLoader).createPlanet(
+      MeshsKinds.meshKind[1],
+      PlanetScales.URANUS_SCALE,
+      true,
+      true,
+      null,
+      null,
+      -1.706932,
+      null, //uranusCenterPosition,
+      0,
+      0,
+      PlanetsConstSize.size,
       widthSegments,
-      heightSegments
+      heightSegments,
+      false,
+      false,
+      PlanetsURL.URANUS_MAP,
+      null,
+      null,
+      null,
+      null,
+      null,
+      MapKinds.mapKind[0],
+      PlanetNames.URANUS
     );
 
-    let uranusCenterPosition =
-      saturnMesh.position.x +
-      saturnRadius +
-      uranusRadius +
-      URANUS_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
-
-    var uranusMaterial = new THREE.MeshBasicMaterial({
-      map: textureLoader.load("https://i.ibb.co/SsPvzx0/uranusmap.jpg"),
-    });
-    uranusMesh = new THREE.Mesh(uranusSphere, uranusMaterial);
-    uranusMesh.rotation.z = -1.706932; //97,8degrees
-    uranusMesh.position.set(uranusCenterPosition, 0, 0);
-
-    //Draw Saturn Ring
-    const uranusInnerRadius = uranusRadius + 1;
-    const uranusOuterRadius = uranusRadius + 4;
-    const uranusThetaSegments = 60;
-
-    const uranusRingGeometry = new THREE.RingBufferGeometry(
-      uranusInnerRadius,
-      uranusOuterRadius,
-      uranusThetaSegments
+    uranusRingMesh = new CreatePlanet(textureLoader).setPlanetRing(
+      PlanetsRings.URANUS,
+      uranusRadius,
+      1.5708,
+      -1.706932 //97.8 degree
     );
-
-    var posUranus = uranusRingGeometry.attributes.position;
-    var v3Uranus = new THREE.Vector3();
-    for (let i = 0; i < posUranus.count; i++) {
-      v3Uranus.fromBufferAttribute(posUranus, i);
-      uranusRingGeometry.attributes.uv.setXY(
-        i,
-        v3Uranus.length() < uranusInnerRadius + 1 ? 0 : 1,
-        1
-      );
-    }
-
-    var uranusRingMaterial = new THREE.MeshBasicMaterial({
-      map: textureLoader.load("https://i.ibb.co/RHdh0ym/uranusringtrans.gif"),
-      color: 0xffffff,
-      side: THREE.DoubleSide,
-      transparent: true,
-      opacity: 0.8,
-    });
-
-    uranusRingMesh = new THREE.Mesh(uranusRingGeometry, uranusRingMaterial);
-    uranusRingMesh.rotation.x = 1.5708; //rotaciona o eixo X na mesma direcao do eixo x dos planetas
-    uranusRingMesh.rotation.y = -1.706932; //97.8degree
 
     //draw uranus orbit line
-    uranusOrbitPathMesh = drawEllipseOrbitPath(uranusCenterPosition, 0xffffff);
-    uranusAstronomicalUnitFactor = uranusCenterPosition;
-    uranusRingMesh.position.x = uranusMesh.position.x;
+    // uranusOrbitPathMesh = new CreatePlanet(textureLoader).drawEllipseOrbitPath(
+    //   scene,
+    //   uranusCenterPosition,
+    //   0xffffff
+    // );
+    // uranusAstronomicalUnitFactor = uranusCenterPosition;
+    // uranusRingMesh.position.x = uranusMesh.position.x;
 
     //////////////////////////NEPTUNO ///////////////////////////
 
-    const neptunoSphere = new THREE.SphereBufferGeometry(
-      neptunoRadius,
+    // let neptunoCenterPosition =
+    //   uranusMesh.position.x +
+    //   uranusRadius +
+    //   neptunoRadius +
+    //   NEPTUNO_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
+
+    neptunoMesh = new CreatePlanet(textureLoader).createPlanet(
+      MeshsKinds.meshKind[1],
+      PlanetScales.NEPTUNO_SCALE,
+      true,
+      true,
+      null,
+      null,
+      -0.49410271, //97.8 degrees
+      null, //neptunoCenterPosition,
+      0,
+      0,
+      PlanetsConstSize.size, //neptunoRadius, //radius divided by 10.000
       widthSegments,
-      heightSegments
+      heightSegments,
+      false,
+      false,
+      PlanetsURL.NEPTUNO_MAP,
+      null,
+      null,
+      null,
+      null,
+      null,
+      MapKinds.mapKind[0],
+      PlanetNames.NEPTUNO
     );
-
-    let neptunoCenterPosition =
-      uranusMesh.position.x +
-      uranusRadius +
-      neptunoRadius +
-      NEPTUNO_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
-
-    var neptunoMaterial = new THREE.MeshBasicMaterial({
-      map: textureLoader.load("https://i.ibb.co/DtfRtw5/neptunemap.jpg"),
-    });
-    neptunoMesh = new THREE.Mesh(neptunoSphere, neptunoMaterial);
-    neptunoMesh.rotation.z = -0.49410271; //97,8degrees
-    neptunoMesh.position.set(neptunoCenterPosition, 0, 0);
 
     //draw neptuno orbit line
-    neptunoOrbitPathMesh = drawEllipseOrbitPath(
-      neptunoCenterPosition,
-      0xffffff
-    );
-
-    neptunoAstronomicalUnitFactor = neptunoCenterPosition;
+    // neptunoOrbitPathMesh = new CreatePlanet(textureLoader).drawEllipseOrbitPath(
+    //   scene,
+    //   neptunoCenterPosition,
+    //   0xffffff
+    // );
+    // neptunoAstronomicalUnitFactor = neptunoCenterPosition;
 
     ///////////////////////////////////////////////////////////////
 
@@ -613,19 +657,40 @@ function MAIN() {
     scene.add(venusMesh);
     scene.add(mercuryMesh);
     scene.add(earthMesh);
-    scene.add(moonMesh);
+    // scene.add(moonMesh);
     scene.add(marsMesh);
     scene.add(jupyterMesh);
     scene.add(saturnMesh);
-    scene.add(saturnRingMesh);
+    // scene.add(saturnRingMesh);
     scene.add(uranusMesh);
-    scene.add(uranusRingMesh);
+    // scene.add(uranusRingMesh);
     scene.add(neptunoMesh);
+  }
+
+  function update() {
+    SCALING_TIME = dataControls.Orbit_Speed;
+
+    AdjustPlanetLocation(mercuryMesh, planets[0]);
+
+    AdjustPlanetLocation(venusMesh, planets[1]);
+
+    AdjustPlanetLocation(earthMesh, planets[2]);
+
+    AdjustPlanetLocation(moonMesh, planets[3]);
+
+    AdjustPlanetLocation(marsMesh, planets[4]);
+    AdjustPlanetLocation(jupyterMesh, planets[5]);
+
+    AdjustPlanetLocation(saturnMesh, planets[6]);
+    AdjustPlanetLocation(uranusMesh, planets[7]);
+    AdjustPlanetLocation(neptunoMesh, planets[8]);
+
+    sunMesh.rotation.y += 0.0005;
   }
 
   // perform any updates to the scene, called once per frame
   // avoid heavy computation here
-  function update() {
+  function update1() {
     //Frame is updated every 60FPS. the render function is called every 60 times a second
     // console.log(SIMULATION_SPEED_ORBIT);
     //////////////////////Define orbit of the planets/////////////////////////
@@ -788,14 +853,14 @@ function MAIN() {
 
   function resetCameraPosition() {
     //r = reset camera position
-    console.log(controls);
+    // console.log(controls);
     controls.reset();
     camera.position.set(-35, 38, -55);
     SIMULATION_SPEED_ORBIT = dataControls.Orbit_Speed;
   }
 
   function onKeyDown(evt) {
-    console.log(evt);
+    // console.log(evt);
 
     if (evt.keyCode === 79) {
       //o pause or play rotation planet
@@ -949,31 +1014,6 @@ function MAIN() {
     return degree * (Math.PI / 180);
   }
 
-  function drawEllipseOrbitPath(planetCenterPosition, hexLineColor) {
-    var curve = new THREE.EllipseCurve(
-      0,
-      0, // ax, aY
-      planetCenterPosition,
-      planetCenterPosition, // xRadius, yRadius
-      0,
-      2 * Math.PI, // aStartAngle, aEndAngle
-      false, // aClockwise
-      0 // aRotation
-    );
-
-    var points = curve.getPoints(100);
-    var geometry = new THREE.BufferGeometry().setFromPoints(points);
-
-    var material = new THREE.LineBasicMaterial({ color: hexLineColor });
-
-    // Create the final object to add to the scene
-    var mesh = new THREE.Line(geometry, material);
-    mesh.rotation.x = 1.5708; //rotaciona o eixo X na mesma direcao do eixo x dos planetas
-    scene.add(mesh);
-
-    return mesh;
-  }
-
   function createSpeedMenu() {
     let dataLighting = {
       Ambient_Light: 0.4,
@@ -1003,9 +1043,10 @@ function MAIN() {
         SIMULATION_SPEED_ROTATION = value;
       });
     folderSpeed
-      .add(dataControls, "Orbit_Speed", 0, 3)
+      .add(dataControls, "Orbit_Speed", 0, 40000)
       .onChange(function (value) {
-        SIMULATION_SPEED_ORBIT = value;
+        // SIMULATION_SPEED_ORBIT = value;
+        SCALING_TIME = value;
       });
     folderSpeed.add(dataControls, "Stop_Animation").onChange(function (value) {
       if (value === true) {

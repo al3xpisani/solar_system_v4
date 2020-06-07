@@ -171,7 +171,7 @@ function MAIN() {
     controls = new Controls(
       camera,
       container,
-      98300,
+      1000, //98300,
       0.8e9,
       true,
       false,
@@ -180,28 +180,7 @@ function MAIN() {
     );
 
     ambientLight = new Lights(scene).ambientLight(0xffffff, 0.4);
-    // light[0] = new Lights(scene).light(0xffffff, 14000, 0, 2, 0, 0, 0, true);
-    // light[0] = new Lights(scene).lightFromSun(
-    //   0xfffff,
-    //   10e22,
-    //   0,
-    //   2,
-    //   0,
-    //   0,
-    //   0,
-    //   true
-    // );
-    light = new THREE.DirectionalLight(0xffffff, 5);
-    light.position.set(1, 0, 0).normalize();
-    light.color.setHSL(0.1, 0.7, 0.5);
-    light.position.multiplyScalar(30);
-    light.castShadow = true;
-
-    light.target.position.copy(camera.position);
-
-    light.shadow.mapSize.width = 2048; // default
-    light.shadow.mapSize.height = 2048; // default
-    scene.add(light);
+    light = new Lights(scene).lightFromSun(0xffffff, 1e14, 0, 2, 0, 0, 0, true);
 
     axesHelper = new Lights(scene).axesHelper(1000);
 
@@ -220,15 +199,15 @@ function MAIN() {
 
   function generatePlanetData() {
     // Generate Planets. Objects handle physics as well as adding 3d object to scene.
-    Mercury = new Planet_Gen(Mercury_Info, mercuryMesh, false);
-    Venus = new Planet_Gen(Venus_Info, venusMesh, false);
+    Mercury = new Planet_Gen(Mercury_Info, mercuryMesh, true);
+    Venus = new Planet_Gen(Venus_Info, venusMesh, true);
     Earth = new Planet_Gen(Earth_Info, earthMesh, showSpriteText);
     Mars = new Planet_Gen(Mars_Info, marsMesh, showSpriteText);
-    Moon = new Planet_Gen(Moon_Info, moonMesh, false);
+    Moon = new Planet_Gen(Moon_Info, moonMesh, true);
     Jupiter = new Planet_Gen(Jupiter_Info, jupyterMesh, showSpriteText);
     Saturn = new Planet_Gen(Saturn_Info, saturnMesh, showSpriteText);
     Uranus = new Planet_Gen(Uranus_Info, uranusMesh, showSpriteText);
-    Neptune = new Planet_Gen(Neptune_Info, neptunoMesh, false);
+    Neptune = new Planet_Gen(Neptune_Info, neptunoMesh, true);
     //Pluto = new Planet_Gen(Pluto_Info, plutoMesh);
     //sets Orbital path line
     planets = [
@@ -315,7 +294,7 @@ function MAIN() {
       widthSegments,
       heightSegments,
       false,
-      true,
+      false,
       PlanetsURL.MERCURY_MAP,
       null,
       null,
@@ -675,16 +654,17 @@ function MAIN() {
 
     scene.add(skybox_group);
     scene.add(sunMesh);
+
     scene.add(venusMesh);
     scene.add(mercuryMesh);
     scene.add(earthMesh);
-    scene.add(moonMesh);
+    // scene.add(moonMesh);
     scene.add(marsMesh);
     scene.add(jupyterMesh);
     scene.add(saturnMesh);
-    scene.add(saturnRingMesh);
+    // scene.add(saturnRingMesh);
     scene.add(uranusMesh);
-    scene.add(uranusRingMesh);
+    // scene.add(uranusRingMesh);
     scene.add(neptunoMesh);
   }
 
