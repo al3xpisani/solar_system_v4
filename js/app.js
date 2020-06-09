@@ -13,6 +13,7 @@ import {
   PlanetNames,
   PlanetScales,
   PlanetsConstSize,
+  SunLight,
 } from "../constants/Constants.js";
 import {
   CreatePlanet,
@@ -60,7 +61,8 @@ function MAIN() {
     uranusMesh,
     uranusRingMesh,
     neptunoMesh,
-    plutoMesh;
+    plutoMesh,
+    earth_group_orbit = new THREE.Object3D();
 
   var skybox_group = new THREE.Object3D();
 
@@ -181,9 +183,18 @@ function MAIN() {
     );
 
     ambientLight = new Lights(scene).ambientLight(0xffffff, 0.4);
-    light = new Lights(scene).lightFromSun(0xffffff, 4, 0, 0, 0, 0, 0, true);
+    light = new Lights(scene).lightFromSun(
+      0xffffff,
+      SunLight.intensity,
+      0,
+      0,
+      0,
+      0,
+      0,
+      true
+    );
 
-    axesHelper = new Lights(scene).axesHelper(1000);
+    axesHelper = new Lights(scene).axesHelper(9e8);
 
     createMeshes();
     generatePlanetData();
@@ -345,22 +356,6 @@ function MAIN() {
       PlanetNames.VENUS
     );
 
-    //draw planet orbit line
-    // venusOrbitPathMesh = new CreatePlanet(textureLoader).drawEllipseOrbitPath(
-    //   scene,
-    //   venusCenterPosition,
-    //   0xffffff
-    // );
-    // venusAstronomicalUnitFactor = venusCenterPosition;
-
-    ///////////////EARTH////////////////////////////////////////
-
-    // let earthCenterPosition =
-    //   venusMesh.position.x +
-    //   venusRadius +
-    //   earthRadius +
-    //   EARTH_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
-
     earthMesh = new CreatePlanet(textureLoader).createPlanet(
       MeshsKinds.meshKind[2],
       PlanetScales.EARTH_SCALE,
@@ -386,18 +381,6 @@ function MAIN() {
       MapKinds.mapKind[0] + MapKinds.mapKind[1] + MapKinds.mapKind[3],
       PlanetNames.EARTH
     );
-
-    //draw earth orbit line
-    // earthOrbitPathMesh = new CreatePlanet(textureLoader).drawEllipseOrbitPath(
-    //   scene,
-    //   earthCenterPosition,
-    //   0xffffff
-    // );
-    // earthAstronomicalUnitFactor = earthCenterPosition;
-
-    /////////////////MOON//////////////////////////////////////////
-    // let moonCenterPosition =
-    //   earthMesh.position.x + earthRadius * 2 + MOON_DISTFROM_EARTH_UA;
 
     moonMesh = new CreatePlanet(textureLoader).createPlanet(
       MeshsKinds.meshKind[2],
@@ -686,8 +669,12 @@ function MAIN() {
     scene.add(venusMesh);
     scene.add(mercuryMesh);
 
-    scene.add(earthMesh);
-    scene.add(moonMesh);
+    // scene.add(earthMesh);
+    // scene.add(moonMesh);
+
+    earthMesh.add(moonMesh);
+    earth_group_orbit.add(earthMesh);
+    scene.add(earth_group_orbit);
 
     scene.add(marsMesh);
     scene.add(jupyterMesh);
@@ -700,7 +687,6 @@ function MAIN() {
 
     scene.remove(axesHelper);
   }
-  var clock = new THREE.Clock();
 
   function update() {
     SCALING_TIME = dataControls.Orbit_Speed;
@@ -712,18 +698,6 @@ function MAIN() {
     AdjustPlanetLocation(earthMesh, planets[2]);
 
     AdjustPlanetLocation(moonMesh, planets[3]);
-    // var angle = clock.getElapsedTime();
-
-    // earthMesh.position.set(80 * Math.cos(angle), 0, -80 * Math.sin(angle));
-    // earthMesh.rotation.y = angle;
-
-    // var angle2 = angle * 2;
-    // moonMesh.position.set(
-    //   100 * Math.cos(angle2) + earthMesh.position.x,
-    //   100 * Math.sin(angle2) + earthMesh.position.y,
-    //   0
-    // );
-    // moonMesh.rotation.y = angle2;
 
     AdjustPlanetLocation(marsMesh, planets[4]);
     AdjustPlanetLocation(jupyterMesh, planets[5]);
@@ -741,120 +715,23 @@ function MAIN() {
     AdjustPlanetLocation(neptunoMesh, planets[8]);
     AdjustPlanetLocation(plutoMesh, planets[9]);
 
-    sunMesh.rotation.y += 0.0005;
+    // sunMesh.rotation.y += 0.0005;
+    update1();
   }
 
   // perform any updates to the scene, called once per frame
   // avoid heavy computation here
   function update1() {
-    //Frame is updated every 60FPS. the render function is called every 60 times a second
-    // console.log(SIMULATION_SPEED_ORBIT);
-    //////////////////////Define orbit of the planets/////////////////////////
-    mercuryMesh.position.set(
-      mercuryAstronomicalUnitFactor * Math.cos(MERCURYANGLE),
-      0,
-      mercuryAstronomicalUnitFactor * Math.sin(MERCURYANGLE)
-    );
-
-    ////////VENUS//////////////////////
-    venusMesh.position.set(
-      venusAstronomicalUnitFactor * Math.cos(VENUSANGLE),
-      0,
-      venusAstronomicalUnitFactor * Math.sin(VENUSANGLE)
-    );
-
-    //////////EARTH////////////////////
-    earthMesh.position.set(
-      earthAstronomicalUnitFactor * Math.cos(EARTHANGLE),
-      0,
-      earthAstronomicalUnitFactor * Math.sin(EARTHANGLE)
-    );
-
     //////////MOON////////////////////
-    moonMesh.position.x =
-      earthMesh.position.x + moonAstronomicalUnitFactor * Math.cos(MOONANGLE);
-    moonMesh.position.y = 0;
-    moonMesh.position.z =
-      earthMesh.position.z + moonAstronomicalUnitFactor * Math.sin(MOONANGLE);
+    // moonMesh.position.x =
+    //   earthMesh.position.x + moonAstronomicalUnitFactor * Math.cos(MOONANGLE);
+    // moonMesh.position.y = 0;
+    // moonMesh.position.z =
+    //   earthMesh.position.z + moonAstronomicalUnitFactor * Math.sin(MOONANGLE);
 
-    //////////MARS////////////////////
-    marsMesh.position.set(
-      marsAstronomicalUnitFactor * Math.cos(MARSANGLE),
-      0,
-      marsAstronomicalUnitFactor * Math.sin(MARSANGLE)
-    );
-
-    //////////JUPITER////////////////////
-    jupyterMesh.position.set(
-      jupyterAstronomicalUnitFactor * Math.cos(JUPYTERANGLE),
-      0,
-      jupyterAstronomicalUnitFactor * Math.sin(JUPYTERANGLE)
-    );
-
-    //////////SATURN////////////////////
-    saturnMesh.position.set(
-      saturnAstronomicalUnitFactor * Math.cos(SATURNANGLE),
-      0,
-      saturnAstronomicalUnitFactor * Math.sin(SATURNANGLE)
-    );
-    saturnRingMesh.position.x =
-      saturnAstronomicalUnitFactor * Math.cos(SATURNANGLE);
-    saturnRingMesh.position.y = 0;
-    saturnRingMesh.position.z =
-      saturnAstronomicalUnitFactor * Math.sin(SATURNANGLE);
-
-    //////////URANUS////////////////////
-    uranusMesh.position.set(
-      uranusAstronomicalUnitFactor * Math.cos(URANUSANGLE),
-      0,
-      uranusAstronomicalUnitFactor * Math.sin(URANUSANGLE)
-    );
-    uranusRingMesh.position.x =
-      uranusAstronomicalUnitFactor * Math.cos(URANUSANGLE);
-    uranusRingMesh.position.y = 0;
-    uranusRingMesh.position.z =
-      uranusAstronomicalUnitFactor * Math.sin(URANUSANGLE);
-
-    //////////NEPTUNO////////////////////
-    neptunoMesh.position.set(
-      neptunoAstronomicalUnitFactor * Math.cos(NEPTUNOANGLE),
-      0,
-      neptunoAstronomicalUnitFactor * Math.sin(NEPTUNOANGLE)
-    );
-
-    //////CALCULATE ANGLES ROTATION/////////////////////////
-
-    MERCURYANGLE -= convertDegrees_Radians(
-      MERCURYORBITRATING * SIMULATION_SPEED_ORBIT
-    );
-    VENUSANGLE -= convertDegrees_Radians(
-      VENUSORBITRATING * SIMULATION_SPEED_ORBIT
-    );
-    EARTHANGLE -= convertDegrees_Radians(
-      EARTHORBITRATING * SIMULATION_SPEED_ORBIT
-    );
-    MOONANGLE -= convertDegrees_Radians(
-      MOONORBITINGRATING * SIMULATION_SPEED_ORBIT
-    );
-    MARSANGLE -= convertDegrees_Radians(
-      MARSORBITRATING * SIMULATION_SPEED_ORBIT
-    );
-
-    JUPYTERANGLE -= convertDegrees_Radians(
-      JUPYTERORBITING * SIMULATION_SPEED_ORBIT
-    );
-
-    SATURNANGLE -= convertDegrees_Radians(
-      SATURNORBITINGRATING * SIMULATION_SPEED_ORBIT
-    );
-
-    URANUSANGLE -= convertDegrees_Radians(
-      URANUSORBITINGRATING * SIMULATION_SPEED_ORBIT
-    );
-
-    NEPTUNOANGLE -= convertDegrees_Radians(
-      NEPTUNOORBITINGRATING * SIMULATION_SPEED_ORBIT
-    );
+    // MOONANGLE -= convertDegrees_Radians(
+    //   MOONORBITINGRATING * SIMULATION_SPEED_ORBIT
+    // );
 
     ///////////////////////ROTATION///////////////////////////////////////
     sunMesh.rotation.y += convertDegrees_Radians(
@@ -1073,13 +950,13 @@ function MAIN() {
   function createSpeedMenu() {
     let dataLighting = {
       Ambient_Light: 0.4,
-      Sun_Light: 14,
+      Sun_Light: SunLight.intensity,
     };
     let visibleObjects = {
       Orbit_path: true,
     };
     let objectsHelper = {
-      axisHelper: true,
+      axisHelper: false,
     };
 
     var actions = new (function () {
@@ -1125,9 +1002,10 @@ function MAIN() {
 
     var folderSpeedSunLighting = gui.addFolder("Sun Light settings");
     folderSpeedSunLighting
-      .add(dataLighting, "Sun_Light", 1, 24)
+      .add(dataLighting, "Sun_Light", 1, 7)
       .onChange(function (value) {
-        light.power = value * 1000 * 4 * Math.PI;
+        // light.power = value * 1000 * 4 * Math.PI;
+        light.power = value * 4 * Math.PI;
       });
 
     var folderVisibleObjects = gui.addFolder("Objects settings");
@@ -1155,6 +1033,7 @@ function MAIN() {
         }
       });
 
+    //X - RED  Y - GREEN  Z - BLUE
     var folderObjectsHelper = gui.addFolder("Objects Helper");
     folderObjectsHelper
       .add(objectsHelper, "axisHelper")

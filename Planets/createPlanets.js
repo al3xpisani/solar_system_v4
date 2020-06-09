@@ -4,10 +4,17 @@ import {
   PlanetsRings,
   PlanetsURL,
   OrbitRadiusMultiplier,
+  PlanetNames,
 } from "../constants/Constants.js";
 
 var AdjustPlanetLocation = function (group, planet) {
   //var y = planet.semimajor_axis_scene()*Math.sin(planet.orbital_inclination*(Math.PI/180)) * Math.sin(planet.true_anamoly());
+  var scale = OrbitRadiusMultiplier.Orbit_Radius_Multiplier;
+
+  if (planet.name.toUpperCase() === PlanetNames.MOON) {
+    console.log(planet.name);
+    scale = 5;
+  }
   var R =
     (planet.semimajor_axis_scene() *
       (1 - Math.pow(planet.orbital_eccentricity, 2))) /
@@ -18,7 +25,7 @@ var AdjustPlanetLocation = function (group, planet) {
     R *
     Math.sin(planet.orbital_inclination) *
     Math.sin(planet.true_anamoly() + planet.argument_periapsis) *
-    OrbitRadiusMultiplier.Orbit_Radius_Multiplier;
+    scale;
   group.position.x =
     R *
     (Math.cos(planet.longitude_ascending) *
@@ -26,7 +33,7 @@ var AdjustPlanetLocation = function (group, planet) {
       Math.sin(planet.longitude_ascending) *
         Math.sin(planet.true_anamoly() + planet.argument_periapsis)) *
     Math.cos(planet.orbital_inclination) *
-    OrbitRadiusMultiplier.Orbit_Radius_Multiplier;
+    scale;
   group.position.z =
     R *
     (Math.sin(planet.longitude_ascending) *
@@ -34,7 +41,7 @@ var AdjustPlanetLocation = function (group, planet) {
       Math.cos(planet.longitude_ascending) *
         Math.sin(planet.true_anamoly() + planet.argument_periapsis)) *
     Math.cos(planet.orbital_inclination) *
-    OrbitRadiusMultiplier.Orbit_Radius_Multiplier;
+    scale;
   // return group;
 
   // if (group.name === "MOON") {
@@ -42,6 +49,15 @@ var AdjustPlanetLocation = function (group, planet) {
   //   console.log("group.position.x", group.position.x);
   //   console.log("group.position.y", group.position.y);
   //   console.log("group.position.z", group.position.z);
+  //   console.log("planet.semimajor_axis_scene", planet.semimajor_axis_scene());
+  //   console.log(
+  //     "planet.planet.orbital_eccentricity",
+  //     planet.orbital_eccentricity
+  //   );
+  //   console.log("planet.planet.true_anamoly()", planet.true_anamoly());
+  //   console.log("planet.argument_periapsis", planet.argument_periapsis);
+  //   console.log("planet.orbital_inclination", planet.orbital_inclination);
+  //   console.log("planet.longitude_ascending", planet.longitude_ascending);
   // }
 };
 
@@ -296,9 +312,15 @@ var CreatePlanet = function (textureLoader) {
       }
     }
     if (planetScale) {
-      mesh.scale.x = planetScale;
-      mesh.scale.y = planetScale;
-      mesh.scale.z = planetScale;
+      if (planetName !== PlanetNames.MOON) {
+        mesh.scale.x = planetScale;
+        mesh.scale.y = planetScale;
+        mesh.scale.z = planetScale;
+      } else {
+        mesh.scale.x = 0.3;
+        mesh.scale.y = 0.3;
+        mesh.scale.z = 0.3;
+      }
     }
     mesh.name = planetName;
     return mesh;

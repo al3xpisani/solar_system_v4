@@ -2,6 +2,10 @@ const Paths = {
   sky_dome: "../textures/eso_dark.jpg",
 };
 
+const SunLight = {
+  intensity: 2,
+};
+
 const OrbitRadiusMultiplier = {
   Orbit_Radius_Multiplier: 330,
 };
@@ -23,7 +27,7 @@ const PlanetScales = {
   SATURN_SCALE: scale * Saturn_Info.SIZE,
   URANUS_SCALE: scale * Uranus_Info.SIZE,
   NEPTUNO_SCALE: scale * Neptune_Info.SIZE,
-  PLUTO_SCALE: 20000 * Pluto_Info.SIZE, //Pluto special scale cause its too small to be seen
+  PLUTO_SCALE: scale * Pluto_Info.SIZE, //Pluto special scale cause its too small to be seen
 };
 
 const PlanetsRings = {
@@ -86,4 +90,5 @@ export {
   OrbitRadiusMultiplier,
   PlanetScales,
   PlanetsConstSize,
+  SunLight,
 };
