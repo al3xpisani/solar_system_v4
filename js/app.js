@@ -46,7 +46,7 @@ function MAIN() {
   let renderer;
   let scene;
   let textureLoader;
-  let showSpriteText = false;
+  let showSpriteText = true;
 
   let sunMesh,
     earthMesh,
@@ -59,7 +59,8 @@ function MAIN() {
     saturnRingMesh,
     uranusMesh,
     uranusRingMesh,
-    neptunoMesh;
+    neptunoMesh,
+    plutoMesh;
 
   var skybox_group = new THREE.Object3D();
 
@@ -180,7 +181,7 @@ function MAIN() {
     );
 
     ambientLight = new Lights(scene).ambientLight(0xffffff, 0.4);
-    light = new Lights(scene).lightFromSun(0xffffff, 1e14, 0, 2, 0, 0, 0, true);
+    light = new Lights(scene).lightFromSun(0xffffff, 4, 0, 0, 0, 0, 0, true);
 
     axesHelper = new Lights(scene).axesHelper(1000);
 
@@ -199,16 +200,17 @@ function MAIN() {
 
   function generatePlanetData() {
     // Generate Planets. Objects handle physics as well as adding 3d object to scene.
-    Mercury = new Planet_Gen(Mercury_Info, mercuryMesh, true);
-    Venus = new Planet_Gen(Venus_Info, venusMesh, true);
+    Mercury = new Planet_Gen(Mercury_Info, mercuryMesh, showSpriteText);
+    Venus = new Planet_Gen(Venus_Info, venusMesh, showSpriteText);
+    Moon = new Planet_Gen(Moon_Info, moonMesh, showSpriteText);
     Earth = new Planet_Gen(Earth_Info, earthMesh, showSpriteText);
     Mars = new Planet_Gen(Mars_Info, marsMesh, showSpriteText);
-    Moon = new Planet_Gen(Moon_Info, moonMesh, true);
     Jupiter = new Planet_Gen(Jupiter_Info, jupyterMesh, showSpriteText);
     Saturn = new Planet_Gen(Saturn_Info, saturnMesh, showSpriteText);
     Uranus = new Planet_Gen(Uranus_Info, uranusMesh, showSpriteText);
-    Neptune = new Planet_Gen(Neptune_Info, neptunoMesh, true);
-    //Pluto = new Planet_Gen(Pluto_Info, plutoMesh);
+    Neptune = new Planet_Gen(Neptune_Info, neptunoMesh, showSpriteText);
+    Pluto = new Planet_Gen(Pluto_Info, plutoMesh, showSpriteText);
+
     //sets Orbital path line
     planets = [
       Mercury,
@@ -220,11 +222,11 @@ function MAIN() {
       Saturn,
       Uranus,
       Neptune,
+      Pluto,
     ];
     orbit_outlines = new CreatePlanet(textureLoader).setOrbitalPlanetLine(
       planets
     );
-
     scene.add(orbit_outlines);
   }
 
@@ -411,13 +413,13 @@ function MAIN() {
       PlanetsConstSize.size, //moonRadius,
       widthSegments,
       heightSegments,
-      true,
+      false,
       false,
       PlanetsURL.MOON_MAP,
       null,
       null,
-      PlanetsURL.MOON_BUMP_MAP,
       null,
+      PlanetsURL.MOON_BUMP_MAP,
       null,
       MapKinds.mapKind[0] + MapKinds.mapKind[4],
       PlanetNames.MOON
@@ -650,6 +652,32 @@ function MAIN() {
     // );
     // neptunoAstronomicalUnitFactor = neptunoCenterPosition;
 
+    plutoMesh = new CreatePlanet(textureLoader).createPlanet(
+      MeshsKinds.meshKind[2],
+      PlanetScales.PLUTO_SCALE,
+      true,
+      true,
+      null,
+      null,
+      0,
+      null, //PlutoCenterPosi,
+      0,
+      0,
+      PlanetsConstSize.size,
+      widthSegments,
+      heightSegments,
+      false,
+      false,
+      PlanetsURL.PLUTO_MAP,
+      null,
+      null,
+      null,
+      PlanetsURL.PLUTO_BUMP_MAP,
+      null,
+      MapKinds.mapKind[0] + MapKinds.mapKind[4],
+      PlanetNames.PLUTO
+    );
+
     ///////////////////////////////////////////////////////////////
 
     scene.add(skybox_group);
@@ -657,16 +685,22 @@ function MAIN() {
 
     scene.add(venusMesh);
     scene.add(mercuryMesh);
+
     scene.add(earthMesh);
-    // scene.add(moonMesh);
+    scene.add(moonMesh);
+
     scene.add(marsMesh);
     scene.add(jupyterMesh);
     scene.add(saturnMesh);
-    // scene.add(saturnRingMesh);
+    scene.add(saturnRingMesh);
     scene.add(uranusMesh);
-    // scene.add(uranusRingMesh);
+    scene.add(uranusRingMesh);
     scene.add(neptunoMesh);
+    scene.add(plutoMesh);
+
+    scene.remove(axesHelper);
   }
+  var clock = new THREE.Clock();
 
   function update() {
     SCALING_TIME = dataControls.Orbit_Speed;
@@ -678,13 +712,34 @@ function MAIN() {
     AdjustPlanetLocation(earthMesh, planets[2]);
 
     AdjustPlanetLocation(moonMesh, planets[3]);
+    // var angle = clock.getElapsedTime();
+
+    // earthMesh.position.set(80 * Math.cos(angle), 0, -80 * Math.sin(angle));
+    // earthMesh.rotation.y = angle;
+
+    // var angle2 = angle * 2;
+    // moonMesh.position.set(
+    //   100 * Math.cos(angle2) + earthMesh.position.x,
+    //   100 * Math.sin(angle2) + earthMesh.position.y,
+    //   0
+    // );
+    // moonMesh.rotation.y = angle2;
 
     AdjustPlanetLocation(marsMesh, planets[4]);
     AdjustPlanetLocation(jupyterMesh, planets[5]);
 
     AdjustPlanetLocation(saturnMesh, planets[6]);
+    saturnRingMesh.position.x = saturnMesh.position.x;
+    saturnRingMesh.position.y = saturnMesh.position.y;
+    saturnRingMesh.position.z = saturnMesh.position.z;
+
     AdjustPlanetLocation(uranusMesh, planets[7]);
+    uranusRingMesh.position.x = uranusMesh.position.x;
+    uranusRingMesh.position.y = uranusMesh.position.y;
+    uranusRingMesh.position.z = uranusMesh.position.z;
+
     AdjustPlanetLocation(neptunoMesh, planets[8]);
+    AdjustPlanetLocation(plutoMesh, planets[9]);
 
     sunMesh.rotation.y += 0.0005;
   }

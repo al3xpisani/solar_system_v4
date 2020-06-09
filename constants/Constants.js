@@ -11,7 +11,7 @@ const PlanetsConstSize = {
 };
 
 var scale = 500;
-//all values below multiplied by 10.000
+//all values below multiplied by ...
 const PlanetScales = {
   SUN_SCALE: 0,
   MERCURY_SCALE: scale * Mercury_Info.SIZE,
@@ -22,8 +22,8 @@ const PlanetScales = {
   JUPYTER_SCALE: scale * Jupiter_Info.SIZE,
   SATURN_SCALE: scale * Saturn_Info.SIZE,
   URANUS_SCALE: scale * Uranus_Info.SIZE,
-  NEPTUNO_SCALE: scale * Neptune_Info.SIZE, //needs a extra size to be clear visible
-  PLUTO_SCALE: 1,
+  NEPTUNO_SCALE: scale * Neptune_Info.SIZE,
+  PLUTO_SCALE: 20000 * Pluto_Info.SIZE, //Pluto special scale cause its too small to be seen
 };
 
 const PlanetsRings = {
@@ -58,6 +58,8 @@ const PlanetsURL = {
   URANUS_MAP: "https://i.ibb.co/SsPvzx0/uranusmap.jpg",
   URANUS_RING_MAP: "https://i.ibb.co/RHdh0ym/uranusringtrans.gif",
   NEPTUNO_MAP: "https://i.ibb.co/DtfRtw5/neptunemap.jpg",
+  PLUTO_MAP: "https://i.ibb.co/0nZ9hyk/image.png",
+  PLUTO_BUMP_MAP: "https://i.ibb.co/D5FDr9m/plutobump2k.jpg",
 };
 
 const PlanetNames = {

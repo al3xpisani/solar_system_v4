@@ -57,11 +57,11 @@ var Lights = function (scene) {
     var lensflare = new Lensflare();
 
     lensflare.addElement(
-      new LensflareElement(textureFlare0, 512, 0.6),
+      new LensflareElement(textureFlare0, 128, 0.6),
       THREE.AdditiveBlending
     );
     lensflare.addElement(
-      new LensflareElement(textureFlare1, 512, 0),
+      new LensflareElement(textureFlare1, 256, 0),
       THREE.AdditiveBlending
     );
     lensflare.addElement(

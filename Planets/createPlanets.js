@@ -37,7 +37,7 @@ var AdjustPlanetLocation = function (group, planet) {
     OrbitRadiusMultiplier.Orbit_Radius_Multiplier;
   // return group;
 
-  // if (group.name === "EARTH") {
+  // if (group.name === "MOON") {
   //   console.log("R", R);
   //   console.log("group.position.x", group.position.x);
   //   console.log("group.position.y", group.position.y);
@@ -146,6 +146,10 @@ var CreatePlanet = function (textureLoader) {
     satUraRingMesh = new THREE.Mesh(satUraRingGeometry, satUraRingMaterial);
     satUraRingMesh.rotation.x = rotationx; //rotaciona o eixo X na mesma direcao do eixo x dos planetas
     satUraRingMesh.rotation.y = rotationy;
+
+    satUraRingMesh.scale.x = 445500;
+    satUraRingMesh.scale.y = 445500;
+    satUraRingMesh.scale.z = 445500;
 
     return satUraRingMesh;
   };
