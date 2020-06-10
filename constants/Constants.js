@@ -17,7 +17,7 @@ const PlanetsConstSize = {
 var scale = 500;
 //all values below multiplied by ...
 const PlanetScales = {
-  SUN_SCALE: 0,
+  SUN_SCALE: 10,
   MERCURY_SCALE: scale * Mercury_Info.SIZE,
   VENUS_SCALE: scale * Venus_Info.SIZE,
   EARTH_SCALE: scale * Earth_Info.SIZE,

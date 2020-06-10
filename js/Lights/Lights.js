@@ -29,16 +29,22 @@ var Lights = function (scene) {
     light2.name = "SUNLIGHT";
     light2.distance = distance;
     light2.decay = decay;
-    light2.position.set(lightPositionX, lightPositionY, lightPositionZ);
+    // light2.position.set(lightPositionX, lightPositionY, lightPositionZ);
     light2.castShadow = castShadow; // default false
-    light2.receiveShadow = false;
-    light2.shadow.mapSize.width = 2048; // default
-    light2.shadow.mapSize.height = 2048; // default
-    // light2.shadow.camera.near = 98300;
-    // light2.shadow.camera.far = 0.8e9; // default
+    light2.visible = true;
+    light2.shadow.bias = 0.0001;
+    light2.shadow.mapSize.width = 4096; // default
+    light2.shadow.mapSize.height = 4096; // default
+    light2.shadow.darkness = 0.1;
+    light2.shadow.camera.near = 1000000;
+    light2.shadow.camera.far = 3e9; // default
+    // light2.color.setHSL(0.5, 0.7, 0.8);
 
-    light2.color.setHSL(0.5, 0.7, 0.8);
-    //     h — matiz value between 0.0 and 1.0
+    //shadow.camera.fov and rotation shows the shadow.
+    // light2.shadow.camera.fov = -270;
+    light2.rotation.set(0, Math.PI, 0);
+
+    // h — matiz value between 0.0 and 1.0
     // s — saturation value between 0.0 and 1.0
     // l — lightness value between 0.0 and 1.0
 
@@ -97,7 +103,7 @@ var Lights = function (scene) {
   };
 
   //Create a helper for the shadow camera (optional)
-  // var helper = new THREE.CameraHelper(light.shadow.camera);
+  // var helper = new THREE.CameraHelper(light2.shadow.camera);
   // scene.add(helper);
 };
 

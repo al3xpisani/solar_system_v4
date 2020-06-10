@@ -11,9 +11,10 @@ var AdjustPlanetLocation = function (group, planet) {
   //var y = planet.semimajor_axis_scene()*Math.sin(planet.orbital_inclination*(Math.PI/180)) * Math.sin(planet.true_anamoly());
   var scale = OrbitRadiusMultiplier.Orbit_Radius_Multiplier;
 
+  //A lua por ser satélite da Terra, recebe uma escala de posição diferente pois no
+  //scene.add a lua já foi adicionada pela Terra
   if (planet.name.toUpperCase() === PlanetNames.MOON) {
-    console.log(planet.name);
-    scale = 5;
+    scale = 4;
   }
   var R =
     (planet.semimajor_axis_scene() *
@@ -195,7 +196,7 @@ var CreatePlanet = function (textureLoader) {
     mapKind,
     planetName
   ) {
-    const planetSphere = new THREE.SphereBufferGeometry(
+    var planetSphere = new THREE.SphereBufferGeometry(
       radius,
       widthSegments,
       heightSegments
@@ -208,6 +209,7 @@ var CreatePlanet = function (textureLoader) {
     var planetTextureBumpMapLoader;
 
     var mesh;
+    var planetMaterial;
 
     if (mapKind === MapKinds.mapKind[0]) {
       //map
@@ -234,8 +236,6 @@ var CreatePlanet = function (textureLoader) {
     }
     textureLoader.anisotropy = 16;
     textureLoader.encoding = THREE.sRGBEncoding;
-
-    var planetMaterial;
 
     if (meshKind === MeshsKinds.meshKind[0]) {
       //MeshStandardMaterial
@@ -272,12 +272,14 @@ var CreatePlanet = function (textureLoader) {
         MapKinds.mapKind[0] + MapKinds.mapKind[1] + MapKinds.mapKind[3]
       ) {
         //map + normalMap +  specularMap
-        var planetMaterial = new THREE.MeshPhongMaterial({
+
+        planetMaterial = new THREE.MeshPhongMaterial({
           map: planetTextureMapLoader,
           normalMap: planetTextureNormalMapLoader,
           specularMap: planetTextureSpecularMapLoader,
           normalScale: new THREE.Vector2(6, 6),
-          specular: new THREE.Color("grey"),
+          specular: new THREE.Color("gray"),
+          shininess: 10,
         });
       } else if (mapKind === MapKinds.mapKind[0] + MapKinds.mapKind[4]) {
         //map + bumpMap
@@ -285,6 +287,7 @@ var CreatePlanet = function (textureLoader) {
           map: planetTextureMapLoader,
           bumpMap: planetTextureBumpMapLoader,
           bumpScale: 0.002,
+          shininess: 10,
         });
       } else if (mapKind === MapKinds.mapKind[0]) {
         //map
@@ -296,11 +299,11 @@ var CreatePlanet = function (textureLoader) {
 
     mesh = new THREE.Mesh(planetSphere, planetMaterial);
 
-    if (castShadow) {
+    if (castShadow === true) {
       mesh.castShadow = castShadow;
     }
 
-    if (receiveShadow) {
+    if (receiveShadow === true) {
       mesh.receiveShadow = receiveShadow;
     }
 
@@ -326,6 +329,18 @@ var CreatePlanet = function (textureLoader) {
     return mesh;
   };
 };
+
+function generateShadowTexture() {
+  var canvas = document.createElement("canvas");
+  canvas.width = 2;
+  canvas.height = 2;
+
+  var context = canvas.getContext("2d");
+  context.fillStyle = "white";
+  context.fillRect(0, 1, 2, 1);
+
+  return canvas;
+}
 
 function CreateOrbitalLine(
   semimajor_axis,
