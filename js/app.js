@@ -590,8 +590,12 @@ function MAIN() {
   }
 
   function update() {
-    SCALING_TIME = dataControls.Orbit_Speed;
+    if (SCALING_TIME !== 0) {
+      play();
+    }
+  }
 
+  function play() {
     AdjustPlanetLocation(mercuryMesh, planets[0]);
 
     AdjustPlanetLocation(venusMesh, planets[1]);
@@ -616,7 +620,6 @@ function MAIN() {
     AdjustPlanetLocation(neptunoMesh, planets[8]);
     AdjustPlanetLocation(plutoMesh, planets[9]);
 
-    // sunMesh.rotation.y += 0.0005;
     planetRotation();
   }
 
@@ -695,10 +698,12 @@ function MAIN() {
       }
     } else if (evt.keyCode === 80) {
       //tecla p
-      if (SIMULATION_SPEED_ORBIT === 0.0) {
+      if (SCALING_TIME === 0) {
         SIMULATION_SPEED_ORBIT = dataControls.Orbit_Speed;
+        SCALING_TIME = dataControls.Orbit_Speed;
       } else {
         SIMULATION_SPEED_ORBIT = 0.0;
+        SCALING_TIME = 0;
       }
     } else if (evt.keyCode === 82) {
       //r = reset camera position
@@ -758,11 +763,11 @@ function MAIN() {
       camera.position.z = earthMesh.position.z + 850000;
       camera.lookAt(earthMesh.position);
 
-      SIMULATION_SPEED_ORBIT = dataControls.Orbit_Speed;
+      SCALING_TIME = dataControls.Orbit_Speed;
     } else if (evt.keyCode === 188) {
-      SIMULATION_SPEED_ORBIT -= dataControls.Orbit_Speed;
+      SCALING_TIME -= dataControls.Orbit_Speed;
     } else if (evt.keyCode === 190) {
-      SIMULATION_SPEED_ORBIT += dataControls.Orbit_Speed;
+      SCALING_TIME += dataControls.Orbit_Speed;
     }
   }
 
@@ -840,7 +845,7 @@ function MAIN() {
 
   function createSpeedMenu() {
     let dataLighting = {
-      Ambient_Light: 0.2,
+      Ambient_Light: 0.02,
       Sun_Light: SunLight.intensity,
     };
     let visibleObjects = {
@@ -886,7 +891,7 @@ function MAIN() {
 
     var folderSpeedLighting = gui.addFolder("Lighting settings");
     folderSpeedLighting
-      .add(dataLighting, "Ambient_Light", 0, 1)
+      .add(dataLighting, "Ambient_Light", 0, 2)
       .onChange(function (value) {
         ambientLight.intensity = value;
       });

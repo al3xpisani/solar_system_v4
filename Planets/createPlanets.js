@@ -279,7 +279,7 @@ var CreatePlanet = function (textureLoader) {
           specularMap: planetTextureSpecularMapLoader,
           normalScale: new THREE.Vector2(6, 6),
           specular: new THREE.Color("gray"),
-          shininess: 10,
+          shininess: 5,
         });
       } else if (mapKind === MapKinds.mapKind[0] + MapKinds.mapKind[4]) {
         //map + bumpMap
@@ -287,7 +287,7 @@ var CreatePlanet = function (textureLoader) {
           map: planetTextureMapLoader,
           bumpMap: planetTextureBumpMapLoader,
           bumpScale: 0.002,
-          shininess: 10,
+          shininess: 5,
         });
       } else if (mapKind === MapKinds.mapKind[0]) {
         //map
