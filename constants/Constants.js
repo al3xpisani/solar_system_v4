@@ -27,7 +27,7 @@ const PlanetScales = {
   SATURN_SCALE: scale * Saturn_Info.SIZE,
   URANUS_SCALE: scale * Uranus_Info.SIZE,
   NEPTUNO_SCALE: scale * Neptune_Info.SIZE,
-  PLUTO_SCALE: scale * Pluto_Info.SIZE, //Pluto special scale cause its too small to be seen
+  PLUTO_SCALE: 5000 * Pluto_Info.SIZE, //Pluto special scale cause its too small to be seen
 };
 
 const PlanetsRings = {

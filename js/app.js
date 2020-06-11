@@ -163,18 +163,27 @@ function MAIN() {
 
   const widthSegments = 96;
   const heightSegments = 96;
+  const cameraResetPosition = [-650000, 480000, -750000];
 
   function init() {
     createSpeedMenu();
 
     scene = new THREE.Scene();
 
-    camera = new Camera(container, 60, 0.1, 3e9, -3500, 3800, -5500);
+    camera = new Camera(
+      container,
+      60,
+      10000, //0.1
+      3e9,
+      cameraResetPosition[0],
+      cameraResetPosition[1],
+      cameraResetPosition[2]
+    );
 
     controls = new Controls(
       camera,
       container,
-      1000, //98300,
+      10000, //98300, //10000 fixes the depth between meshes in front of others meshs
       0.8e9,
       true,
       false,
@@ -194,8 +203,8 @@ function MAIN() {
       true
     );
 
-    var helper = new THREE.CameraHelper(light.shadow.camera);
-    scene.add(helper);
+    // var helper = new THREE.CameraHelper(light.shadow.camera);
+    // scene.add(helper);
 
     axesHelper = new Lights(scene).axesHelper(9e8);
 
@@ -682,7 +691,11 @@ function MAIN() {
     //r = reset camera position
     // console.log(controls);
     controls.reset();
-    camera.position.set(-35, 38, -55);
+    camera.position.set(
+      cameraResetPosition[0],
+      cameraResetPosition[1],
+      cameraResetPosition[2]
+    );
     SIMULATION_SPEED_ORBIT = dataControls.Orbit_Speed;
   }
 
@@ -758,10 +771,14 @@ function MAIN() {
     } else if (evt.keyCode === 69) {
       //tecla e
 
-      camera.position.x = earthMesh.position.x + 850000;
-      camera.position.y = 415000;
-      camera.position.z = earthMesh.position.z + 850000;
-      camera.lookAt(earthMesh.position);
+      camera.position.set(
+        earthMesh.position.x + 850000,
+        415000,
+        earthMesh.position.z + 850000
+      );
+
+      controls.target(camera.position);
+      // camera.lookAt(earthMesh.position);
 
       SCALING_TIME = dataControls.Orbit_Speed;
     } else if (evt.keyCode === 188) {
