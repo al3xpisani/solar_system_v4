@@ -173,7 +173,7 @@ function MAIN() {
     camera = new Camera(
       container,
       60,
-      10000, //0.1
+      10000, //0.1    //10000 fixes the depth between meshes in front of others meshs
       3e9,
       cameraResetPosition[0],
       cameraResetPosition[1],
@@ -183,7 +183,7 @@ function MAIN() {
     controls = new Controls(
       camera,
       container,
-      10000, //98300, //10000 fixes the depth between meshes in front of others meshs
+      10000, //98300,
       0.8e9,
       true,
       false,
@@ -205,6 +205,9 @@ function MAIN() {
 
     // var helper = new THREE.CameraHelper(light.shadow.camera);
     // scene.add(helper);
+
+    // var gridHelper = new THREE.GridHelper(10, 10000000000);
+    // scene.add(gridHelper);
 
     axesHelper = new Lights(scene).axesHelper(9e8);
 
@@ -771,14 +774,21 @@ function MAIN() {
     } else if (evt.keyCode === 69) {
       //tecla e
 
-      camera.position.set(
-        earthMesh.position.x + 850000,
-        415000,
-        earthMesh.position.z + 850000
+      camera.lookAt(
+        earthMesh.position.x + 1350000,
+        215000,
+        earthMesh.position.z + 50000
       );
-
-      controls.target(camera.position);
-      // camera.lookAt(earthMesh.position);
+      camera.position.set(
+        earthMesh.position.x + 2000000,
+        215000,
+        earthMesh.position.z + 50000
+      );
+      controls.target.set(
+        earthMesh.position.x + 1350000,
+        215000,
+        earthMesh.position.z + 50000
+      );
 
       SCALING_TIME = dataControls.Orbit_Speed;
     } else if (evt.keyCode === 188) {
@@ -889,7 +899,7 @@ function MAIN() {
         SIMULATION_SPEED_ROTATION = value;
       });
     folderSpeed
-      .add(dataControls, "Orbit_Speed", 0, 40000)
+      .add(dataControls, "Orbit_Speed", 0, 4000000)
       .onChange(function (value) {
         // SIMULATION_SPEED_ORBIT = value;
         SCALING_TIME = value;

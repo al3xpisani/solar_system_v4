@@ -194,7 +194,8 @@ var CreatePlanet = function (textureLoader) {
     planetTextureBumpMap,
     emissiveColor,
     mapKind,
-    planetName
+    planetName,
+    camera
   ) {
     var planetSphere = new THREE.SphereBufferGeometry(
       radius,
@@ -325,6 +326,7 @@ var CreatePlanet = function (textureLoader) {
         mesh.scale.z = 0.3;
       }
     }
+
     mesh.name = planetName;
     return mesh;
   };
