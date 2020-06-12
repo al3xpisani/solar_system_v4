@@ -854,6 +854,9 @@ function MAIN() {
     let objectsHelper = {
       axisHelper: false,
     };
+    let orbitsVisible = {
+      Orbit_Visible: true,
+    };
 
     var actions = new (function () {
       this.Reset_Scene = function () {
@@ -941,11 +944,23 @@ function MAIN() {
         }
       });
 
+    var folderOrbitVisible = gui.addFolder("Visible Orbit");
+    folderOrbitVisible
+      .add(orbitsVisible, "Orbit_Visible")
+      .onChange(function (value) {
+        if (value) {
+          orbit_outlines.visible = true;
+        } else {
+          orbit_outlines.visible = false;
+        }
+      });
+
     // collapse folder1
     folderSpeed.open();
     folderSpeedLighting.close();
     folderSpeedSunLighting.close();
     folderObjectsHelper.close();
+    folderOrbitVisible.close();
   }
 
   function onMouseDown(event) {
