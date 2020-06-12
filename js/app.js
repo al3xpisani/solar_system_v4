@@ -88,58 +88,16 @@ function MAIN() {
     Stop_Animation: false,
   };
 
-  //change value only for the trhee constants below
-  var SUNSCALE_RADIUS = 5;
-  var SIMULATION_SPEED_ORBIT = 0.05;
   var SIMULATION_SPEED_ROTATION = 0.05;
   const REALLITYSCALEFACTOR_RADIUS = 38;
-  const REALLITYSCALEFACTOR_UA_DIST = 10;
   ///////////////////////////////////////
 
-  const MERCURY_SCALE_REF_SUN = 0.003503554; //mercury/sun diameter
-  const VENUS_SCALE_REF_SUN = 0.008691032;
-  const EARTH_SCALE_REF_SUN = 0.009159331;
-  const MOON_SCALE_REF_EARTH = 0.272484; // 0.272353836 = moon/earth diameter
-  const MARS_SCALE_REF_SUN = 0.002433762; //mars/sun diameter
-  const JUPYTER_SCALE_REF_SUN = 0.100394916;
   const SATURN_SCALE_REF_SUN = 0.083621742;
   const URANUS_SCALE_REF_SUN = 0.03642134;
-  const NEPTUNO_SCALE_REF_SUN = 0.035358656;
-
-  const MERCURY_DISTFROM_SUN_UA = 0.39;
-  const VENUS_DISTFROM_SUN_UA = 0.72;
-  const EARTH_DISTFROM_SUN_UA = 1;
-  const MOON_DISTFROM_EARTH_UA = 0.00267;
-  const MARS_DISTFROM_SUN_UA = 1.52;
-  const JUPYTER_DISTFROM_SUN_UA = 5.2;
-  const SATURN_DISTFROM_SUN_UA = 9.53;
-  const URANUS_DISTFROM_SUN_UA = 19.1;
-  const NEPTUNO_DISTFROM_SUN_UA = 30.0;
-
-  let mercuryAstronomicalUnitFactor = 0;
-  let venusAstronomicalUnitFactor = 0;
-  let earthAstronomicalUnitFactor = 0;
-  let moonAstronomicalUnitFactor = 0;
-  let marsAstronomicalUnitFactor = 0;
-  let jupyterAstronomicalUnitFactor = 0;
-  let saturnAstronomicalUnitFactor = 0;
-  let uranusAstronomicalUnitFactor = 0;
-  let neptunoAstronomicalUnitFactor = 0;
 
   const SUN_INIT_POS_X = 0;
   const SUN_INIT_POS_Y = 0;
   const SUN_INIT_POS_Z = 0;
-
-  //Orbit rating
-  let EARTHANGLE = 0; //# this is the angle in degrees representing the Earth's year-long motion around the Sun - so use 0 to 360 (default 0)
-  let MOONANGLE = 0; //# this is an angle in degrees representing the Moon's month-long motion around the Earth - so use 0 to 360 (default 0)
-  let MERCURYANGLE = 0;
-  let VENUSANGLE = 0;
-  let MARSANGLE = 0;
-  let JUPYTERANGLE = 0;
-  let SATURNANGLE = 0;
-  let URANUSANGLE = 0;
-  let NEPTUNOANGLE = 0;
 
   const EARTHORBITRATING = 1.0; //#Período Orbital : 360/365,256363004 = 0.999298   (Almost 1 degree per day)
   const MOONORBITINGRATING = 13.0; //#Período Orbital Lua : 27. 360/27
@@ -151,19 +109,8 @@ function MAIN() {
   const URANUSORBITINGRATING = 0.01; //360 / 84ANOS(30660)
   const NEPTUNOORBITINGRATING = 0.006; //360 / 165ANOS(60225)
 
-  let sunRadius = SUNSCALE_RADIUS;
-  let earthRadius =
-    sunRadius * EARTH_SCALE_REF_SUN * REALLITYSCALEFACTOR_RADIUS;
-  let mercuryRadius =
-    sunRadius * MERCURY_SCALE_REF_SUN * REALLITYSCALEFACTOR_RADIUS;
-  let venusRadius =
-    sunRadius * VENUS_SCALE_REF_SUN * REALLITYSCALEFACTOR_RADIUS;
-  let moonRadius = earthRadius * MOON_SCALE_REF_EARTH;
-  let marsRadius = sunRadius * MARS_SCALE_REF_SUN * REALLITYSCALEFACTOR_RADIUS;
-  let jupyterRadius = JUPYTER_SCALE_REF_SUN * REALLITYSCALEFACTOR_RADIUS; //Eu não uso o raio do sol aqui pois o planeta sairia muito gigante
   let saturnRadius = SATURN_SCALE_REF_SUN * REALLITYSCALEFACTOR_RADIUS; //idem acima
   let uranusRadius = URANUS_SCALE_REF_SUN * REALLITYSCALEFACTOR_RADIUS;
-  let neptunoRadius = NEPTUNO_SCALE_REF_SUN * REALLITYSCALEFACTOR_RADIUS;
 
   const widthSegments = 96;
   const heightSegments = 96;
@@ -591,7 +538,7 @@ function MAIN() {
     scene.add(mercuryMesh);
     earthMesh.add(moonMesh);
     earth_group_orbit.add(earthMesh);
-    earth_group_orbit.name = "EARTH";
+    earth_group_orbit.name = PlanetNames.EARTH;
     // scene.add(earth_group_orbit);
     scene.add(earthMesh);
     scene.add(marsMesh);

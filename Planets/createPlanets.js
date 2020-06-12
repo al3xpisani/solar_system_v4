@@ -120,7 +120,7 @@ var CreatePlanet = function (textureLoader) {
     var satUraRingMesh;
     var satUraInnerRadius = radius + 1;
     var satUrOuterRadius = radius + 5;
-    var satUrThetaSegments = 60;
+    var satUrThetaSegments = 180;
 
     const satUraRingGeometry = new THREE.RingBufferGeometry(
       satUraInnerRadius,
@@ -140,25 +140,19 @@ var CreatePlanet = function (textureLoader) {
     }
 
     var satUraRingMaterial;
-
+    var texturing;
     if (planetName === PlanetsRings.SATURN) {
-      satUraRingMaterial = new THREE.MeshBasicMaterial({
-        map: textureLoader.load(PlanetsURL.SATURN_RING_MAP),
-        color: 0xffffff,
-        side: THREE.DoubleSide,
-        transparent: true,
-        opacity: 0.8,
-      });
+      texturing = PlanetsURL.SATURN_RING_MAP;
     } else {
-      //URANUS
-      satUraRingMaterial = new THREE.MeshBasicMaterial({
-        map: textureLoader.load(PlanetsURL.URANUS_RING_MAP),
-        color: 0xffffff,
-        side: THREE.DoubleSide,
-        transparent: true,
-        opacity: 0.8,
-      });
+      texturing = PlanetsURL.URANUS_RING_MAP;
     }
+    satUraRingMaterial = new THREE.MeshBasicMaterial({
+      map: textureLoader.load(texturing),
+      color: 0xffffff,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.4,
+    });
 
     satUraRingMesh = new THREE.Mesh(satUraRingGeometry, satUraRingMaterial);
     satUraRingMesh.rotation.x = rotationx; //rotaciona o eixo X na mesma direcao do eixo x dos planetas

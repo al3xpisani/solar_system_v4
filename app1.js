@@ -13,6 +13,7 @@ import {
   PlanetNames,
   PlanetScales,
   PlanetsConstSize,
+  SunLight,
 } from "../constants/Constants.js";
 import {
   CreatePlanet,
@@ -23,6 +24,9 @@ var manager;
 var Mercury, Venus, Earth, Moon, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto;
 var planets = [];
 var orbit_outlines = new THREE.Object3D();
+
+var raycaster = new THREE.Raycaster();
+var mouse = new THREE.Vector2();
 
 function MAIN() {
   manager = new LoadingManager().setLoadManager("loadbar", "loadpg");
@@ -46,7 +50,8 @@ function MAIN() {
   let renderer;
   let scene;
   let textureLoader;
-  let showSpriteText = false;
+  let showSpriteText = true;
+  let blockRun = true;
 
   let sunMesh,
     earthMesh,
@@ -59,7 +64,9 @@ function MAIN() {
     saturnRingMesh,
     uranusMesh,
     uranusRingMesh,
-    neptunoMesh;
+    neptunoMesh,
+    plutoMesh,
+    earth_group_orbit = new THREE.Object3D();
 
   var skybox_group = new THREE.Object3D();
 
@@ -160,18 +167,27 @@ function MAIN() {
 
   const widthSegments = 96;
   const heightSegments = 96;
+  const cameraResetPosition = [-650000, 480000, -750000];
 
   function init() {
     createSpeedMenu();
 
     scene = new THREE.Scene();
 
-    camera = new Camera(container, 60, 0.1, 3e9, -3500, 3800, -5500);
+    camera = new Camera(
+      container,
+      60,
+      10000, //0.1    //10000 fixes the depth between meshes in front of others meshs
+      3e9,
+      cameraResetPosition[0],
+      cameraResetPosition[1],
+      cameraResetPosition[2]
+    );
 
     controls = new Controls(
       camera,
       container,
-      98300,
+      10000, //98300,
       0.8e9,
       true,
       false,
@@ -180,9 +196,24 @@ function MAIN() {
     );
 
     ambientLight = new Lights(scene).ambientLight(0xffffff, 0.4);
-    light = new Lights(scene).lightFromSun(0xffffff, 1e14, 0, 2, 0, 0, 0, true);
+    light = new Lights(scene).lightFromSun(
+      0xffffff,
+      SunLight.intensity,
+      0,
+      0,
+      0,
+      0,
+      0,
+      true
+    );
 
-    axesHelper = new Lights(scene).axesHelper(1000);
+    // var helper = new THREE.CameraHelper(light.shadow.camera);
+    // scene.add(helper);
+
+    // var gridHelper = new THREE.GridHelper(10, 10000000000);
+    // scene.add(gridHelper);
+
+    axesHelper = new Lights(scene).axesHelper(9e8);
 
     createMeshes();
     generatePlanetData();
@@ -199,16 +230,17 @@ function MAIN() {
 
   function generatePlanetData() {
     // Generate Planets. Objects handle physics as well as adding 3d object to scene.
-    Mercury = new Planet_Gen(Mercury_Info, mercuryMesh, false);
-    Venus = new Planet_Gen(Venus_Info, venusMesh, false);
+    Mercury = new Planet_Gen(Mercury_Info, mercuryMesh, showSpriteText);
+    Venus = new Planet_Gen(Venus_Info, venusMesh, showSpriteText);
+    Moon = new Planet_Gen(Moon_Info, moonMesh, showSpriteText);
     Earth = new Planet_Gen(Earth_Info, earthMesh, showSpriteText);
     Mars = new Planet_Gen(Mars_Info, marsMesh, showSpriteText);
-    Moon = new Planet_Gen(Moon_Info, moonMesh, false);
     Jupiter = new Planet_Gen(Jupiter_Info, jupyterMesh, showSpriteText);
     Saturn = new Planet_Gen(Saturn_Info, saturnMesh, showSpriteText);
     Uranus = new Planet_Gen(Uranus_Info, uranusMesh, showSpriteText);
-    Neptune = new Planet_Gen(Neptune_Info, neptunoMesh, false);
-    //Pluto = new Planet_Gen(Pluto_Info, plutoMesh);
+    Neptune = new Planet_Gen(Neptune_Info, neptunoMesh, showSpriteText);
+    Pluto = new Planet_Gen(Pluto_Info, plutoMesh, showSpriteText);
+
     //sets Orbital path line
     planets = [
       Mercury,
@@ -220,11 +252,11 @@ function MAIN() {
       Saturn,
       Uranus,
       Neptune,
+      Pluto,
     ];
     orbit_outlines = new CreatePlanet(textureLoader).setOrbitalPlanetLine(
       planets
     );
-
     scene.add(orbit_outlines);
   }
 
@@ -273,11 +305,6 @@ function MAIN() {
       PlanetNames.SUN
     );
     ////////////////////MERCURY///////////////////////////////////
-    // var mercuryCenterPosition =
-    //   SUN_INIT_POS_X +
-    //   SUNSCALE_RADIUS +
-    //   mercuryRadius +
-    //   MERCURY_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
 
     mercuryMesh = new CreatePlanet(textureLoader).createPlanet(
       MeshsKinds.meshKind[0],
@@ -304,18 +331,6 @@ function MAIN() {
       MapKinds.mapKind[0] + MapKinds.mapKind[4],
       PlanetNames.MERCURY
     );
-    //draw planet orbit line
-    // mercuryoOrbitPathMesh = new CreatePlanet(
-    //   textureLoader
-    // ).drawEllipseOrbitPath(scene, mercuryCenterPosition, 0xffffff);
-    //mercuryAstronomicalUnitFactor = mercuryCenterPosition;
-
-    ///////////////VENUS////////////////////////////////////////
-    // let venusCenterPosition =
-    //   mercuryMesh.position.x +
-    //   mercuryRadius +
-    //   venusRadius +
-    //   VENUS_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
 
     venusMesh = new CreatePlanet(textureLoader).createPlanet(
       MeshsKinds.meshKind[0],
@@ -343,22 +358,6 @@ function MAIN() {
       PlanetNames.VENUS
     );
 
-    //draw planet orbit line
-    // venusOrbitPathMesh = new CreatePlanet(textureLoader).drawEllipseOrbitPath(
-    //   scene,
-    //   venusCenterPosition,
-    //   0xffffff
-    // );
-    // venusAstronomicalUnitFactor = venusCenterPosition;
-
-    ///////////////EARTH////////////////////////////////////////
-
-    // let earthCenterPosition =
-    //   venusMesh.position.x +
-    //   venusRadius +
-    //   earthRadius +
-    //   EARTH_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
-
     earthMesh = new CreatePlanet(textureLoader).createPlanet(
       MeshsKinds.meshKind[2],
       PlanetScales.EARTH_SCALE,
@@ -374,7 +373,7 @@ function MAIN() {
       widthSegments,
       heightSegments,
       false,
-      false,
+      true,
       PlanetsURL.EARTH_MAP,
       PlanetsURL.EARTH_NORMAL_MAP,
       null,
@@ -384,18 +383,6 @@ function MAIN() {
       MapKinds.mapKind[0] + MapKinds.mapKind[1] + MapKinds.mapKind[3],
       PlanetNames.EARTH
     );
-
-    //draw earth orbit line
-    // earthOrbitPathMesh = new CreatePlanet(textureLoader).drawEllipseOrbitPath(
-    //   scene,
-    //   earthCenterPosition,
-    //   0xffffff
-    // );
-    // earthAstronomicalUnitFactor = earthCenterPosition;
-
-    /////////////////MOON//////////////////////////////////////////
-    // let moonCenterPosition =
-    //   earthMesh.position.x + earthRadius * 2 + MOON_DISTFROM_EARTH_UA;
 
     moonMesh = new CreatePlanet(textureLoader).createPlanet(
       MeshsKinds.meshKind[2],
@@ -416,21 +403,14 @@ function MAIN() {
       PlanetsURL.MOON_MAP,
       null,
       null,
-      PlanetsURL.MOON_BUMP_MAP,
       null,
+      PlanetsURL.MOON_BUMP_MAP,
       null,
       MapKinds.mapKind[0] + MapKinds.mapKind[4],
       PlanetNames.MOON
     );
-    //moonAstronomicalUnitFactor = earthRadius * 2 + MOON_DISTFROM_EARTH_UA;
 
     //////////////////////////MARS///////////////////////////
-
-    // let marsCenterPosition =
-    //   earthMesh.position.x +
-    //   earthRadius +
-    //   marsRadius +
-    //   MARS_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
 
     marsMesh = new CreatePlanet(textureLoader).createPlanet(
       MeshsKinds.meshKind[2],
@@ -458,22 +438,6 @@ function MAIN() {
       PlanetNames.MARS
     );
 
-    //draw earth orbit line
-    // marsOrbitPathMesh = new CreatePlanet(textureLoader).drawEllipseOrbitPath(
-    //   scene,
-    //   marsCenterPosition,
-    //   0xffffff
-    // );
-    // marsAstronomicalUnitFactor = marsCenterPosition;
-
-    //////////////////////////JUPYTER///////////////////////////
-
-    // let jupyterCenterPosition =
-    //   marsMesh.position.x +
-    //   marsRadius +
-    //   jupyterRadius +
-    //   JUPYTER_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
-
     jupyterMesh = new CreatePlanet(textureLoader).createPlanet(
       MeshsKinds.meshKind[2],
       PlanetScales.JUPYTER_SCALE,
@@ -499,22 +463,6 @@ function MAIN() {
       MapKinds.mapKind[0],
       PlanetNames.JUPYTER
     );
-
-    //draw earth orbit line
-    // jupyterOrbitPathMesh = new CreatePlanet(textureLoader).drawEllipseOrbitPath(
-    //   scene,
-    //   jupyterCenterPosition,
-    //   0xffffff
-    // );
-    // jupyterAstronomicalUnitFactor = jupyterCenterPosition;
-
-    //////////////////////////SATURN ///////////////////////////
-
-    // let saturnCenterPosition =
-    //   jupyterMesh.position.x +
-    //   jupyterRadius +
-    //   saturnRadius +
-    //   SATURN_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
 
     saturnMesh = new CreatePlanet(textureLoader).createPlanet(
       MeshsKinds.meshKind[2],
@@ -549,23 +497,6 @@ function MAIN() {
       -0.45
     );
 
-    //draw saturn orbit line
-    // saturnOrbitPathMesh = new CreatePlanet(textureLoader).drawEllipseOrbitPath(
-    //   scene,
-    //   saturnCenterPosition,
-    //   0xffffff
-    // );
-    // saturnAstronomicalUnitFactor = saturnCenterPosition;
-    // saturnRingMesh.position.x = saturnMesh.position.x;
-
-    //////////////////////////URANUS ///////////////////////////
-
-    // let uranusCenterPosition =
-    //   saturnMesh.position.x +
-    //   saturnRadius +
-    //   uranusRadius +
-    //   URANUS_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
-
     uranusMesh = new CreatePlanet(textureLoader).createPlanet(
       MeshsKinds.meshKind[1],
       PlanetScales.URANUS_SCALE,
@@ -599,23 +530,6 @@ function MAIN() {
       -1.706932 //97.8 degree
     );
 
-    //draw uranus orbit line
-    // uranusOrbitPathMesh = new CreatePlanet(textureLoader).drawEllipseOrbitPath(
-    //   scene,
-    //   uranusCenterPosition,
-    //   0xffffff
-    // );
-    // uranusAstronomicalUnitFactor = uranusCenterPosition;
-    // uranusRingMesh.position.x = uranusMesh.position.x;
-
-    //////////////////////////NEPTUNO ///////////////////////////
-
-    // let neptunoCenterPosition =
-    //   uranusMesh.position.x +
-    //   uranusRadius +
-    //   neptunoRadius +
-    //   NEPTUNO_DISTFROM_SUN_UA * REALLITYSCALEFACTOR_UA_DIST;
-
     neptunoMesh = new CreatePlanet(textureLoader).createPlanet(
       MeshsKinds.meshKind[1],
       PlanetScales.NEPTUNO_SCALE,
@@ -642,34 +556,83 @@ function MAIN() {
       PlanetNames.NEPTUNO
     );
 
-    //draw neptuno orbit line
-    // neptunoOrbitPathMesh = new CreatePlanet(textureLoader).drawEllipseOrbitPath(
-    //   scene,
-    //   neptunoCenterPosition,
-    //   0xffffff
-    // );
-    // neptunoAstronomicalUnitFactor = neptunoCenterPosition;
+    plutoMesh = new CreatePlanet(textureLoader).createPlanet(
+      MeshsKinds.meshKind[2],
+      PlanetScales.PLUTO_SCALE,
+      true,
+      true,
+      null,
+      null,
+      0,
+      null, //PlutoCenterPosi,
+      0,
+      0,
+      PlanetsConstSize.size,
+      widthSegments,
+      heightSegments,
+      false,
+      false,
+      PlanetsURL.PLUTO_MAP,
+      null,
+      null,
+      null,
+      PlanetsURL.PLUTO_BUMP_MAP,
+      null,
+      MapKinds.mapKind[0] + MapKinds.mapKind[4],
+      PlanetNames.PLUTO
+    );
 
     ///////////////////////////////////////////////////////////////
 
     scene.add(skybox_group);
     scene.add(sunMesh);
+
     scene.add(venusMesh);
     scene.add(mercuryMesh);
+    earthMesh.add(moonMesh);
+    earth_group_orbit.add(earthMesh);
+    earth_group_orbit.name = PlanetNames.EARTH;
+    // scene.add(earth_group_orbit);
     scene.add(earthMesh);
-    // scene.add(moonMesh);
     scene.add(marsMesh);
     scene.add(jupyterMesh);
     scene.add(saturnMesh);
-    // scene.add(saturnRingMesh);
+    scene.add(saturnRingMesh);
     scene.add(uranusMesh);
-    // scene.add(uranusRingMesh);
+    scene.add(uranusRingMesh);
     scene.add(neptunoMesh);
+    scene.add(plutoMesh);
+
+    scene.remove(axesHelper);
   }
 
   function update() {
-    SCALING_TIME = dataControls.Orbit_Speed;
+    if (SCALING_TIME !== 0) {
+      playPlanet();
+      getPlanetClick(scene);
+    }
+  }
 
+  function getPlanetClick(sceneObject) {
+    raycaster.setFromCamera(mouse, camera);
+    var intersects = raycaster.intersectObjects(sceneObject.children);
+    //
+    if (!blockRun) {
+      if (intersects.length > 0) {
+        alert(intersects[0].object.name);
+      } else {
+        try {
+          var intersects1 = raycaster.intersectObjects(earthMesh.children);
+          alert(intersects1[0].object.name);
+        } catch (e) {
+          //If user clicks on space do nothing - intersects1 array get index OOR
+        }
+      }
+    }
+    blockRun = true;
+  }
+
+  function playPlanet() {
     AdjustPlanetLocation(mercuryMesh, planets[0]);
 
     AdjustPlanetLocation(venusMesh, planets[1]);
@@ -682,128 +645,29 @@ function MAIN() {
     AdjustPlanetLocation(jupyterMesh, planets[5]);
 
     AdjustPlanetLocation(saturnMesh, planets[6]);
-    AdjustPlanetLocation(uranusMesh, planets[7]);
-    AdjustPlanetLocation(neptunoMesh, planets[8]);
+    saturnRingMesh.position.x = saturnMesh.position.x;
+    saturnRingMesh.position.y = saturnMesh.position.y;
+    saturnRingMesh.position.z = saturnMesh.position.z;
 
-    sunMesh.rotation.y += 0.0005;
+    AdjustPlanetLocation(uranusMesh, planets[7]);
+    uranusRingMesh.position.x = uranusMesh.position.x;
+    uranusRingMesh.position.y = uranusMesh.position.y;
+    uranusRingMesh.position.z = uranusMesh.position.z;
+
+    AdjustPlanetLocation(neptunoMesh, planets[8]);
+    AdjustPlanetLocation(plutoMesh, planets[9]);
+
+    planetRotation();
   }
 
   // perform any updates to the scene, called once per frame
   // avoid heavy computation here
-  function update1() {
-    //Frame is updated every 60FPS. the render function is called every 60 times a second
-    // console.log(SIMULATION_SPEED_ORBIT);
-    //////////////////////Define orbit of the planets/////////////////////////
-    mercuryMesh.position.set(
-      mercuryAstronomicalUnitFactor * Math.cos(MERCURYANGLE),
-      0,
-      mercuryAstronomicalUnitFactor * Math.sin(MERCURYANGLE)
-    );
-
-    ////////VENUS//////////////////////
-    venusMesh.position.set(
-      venusAstronomicalUnitFactor * Math.cos(VENUSANGLE),
-      0,
-      venusAstronomicalUnitFactor * Math.sin(VENUSANGLE)
-    );
-
-    //////////EARTH////////////////////
-    earthMesh.position.set(
-      earthAstronomicalUnitFactor * Math.cos(EARTHANGLE),
-      0,
-      earthAstronomicalUnitFactor * Math.sin(EARTHANGLE)
-    );
-
-    //////////MOON////////////////////
-    moonMesh.position.x =
-      earthMesh.position.x + moonAstronomicalUnitFactor * Math.cos(MOONANGLE);
-    moonMesh.position.y = 0;
-    moonMesh.position.z =
-      earthMesh.position.z + moonAstronomicalUnitFactor * Math.sin(MOONANGLE);
-
-    //////////MARS////////////////////
-    marsMesh.position.set(
-      marsAstronomicalUnitFactor * Math.cos(MARSANGLE),
-      0,
-      marsAstronomicalUnitFactor * Math.sin(MARSANGLE)
-    );
-
-    //////////JUPITER////////////////////
-    jupyterMesh.position.set(
-      jupyterAstronomicalUnitFactor * Math.cos(JUPYTERANGLE),
-      0,
-      jupyterAstronomicalUnitFactor * Math.sin(JUPYTERANGLE)
-    );
-
-    //////////SATURN////////////////////
-    saturnMesh.position.set(
-      saturnAstronomicalUnitFactor * Math.cos(SATURNANGLE),
-      0,
-      saturnAstronomicalUnitFactor * Math.sin(SATURNANGLE)
-    );
-    saturnRingMesh.position.x =
-      saturnAstronomicalUnitFactor * Math.cos(SATURNANGLE);
-    saturnRingMesh.position.y = 0;
-    saturnRingMesh.position.z =
-      saturnAstronomicalUnitFactor * Math.sin(SATURNANGLE);
-
-    //////////URANUS////////////////////
-    uranusMesh.position.set(
-      uranusAstronomicalUnitFactor * Math.cos(URANUSANGLE),
-      0,
-      uranusAstronomicalUnitFactor * Math.sin(URANUSANGLE)
-    );
-    uranusRingMesh.position.x =
-      uranusAstronomicalUnitFactor * Math.cos(URANUSANGLE);
-    uranusRingMesh.position.y = 0;
-    uranusRingMesh.position.z =
-      uranusAstronomicalUnitFactor * Math.sin(URANUSANGLE);
-
-    //////////NEPTUNO////////////////////
-    neptunoMesh.position.set(
-      neptunoAstronomicalUnitFactor * Math.cos(NEPTUNOANGLE),
-      0,
-      neptunoAstronomicalUnitFactor * Math.sin(NEPTUNOANGLE)
-    );
-
-    //////CALCULATE ANGLES ROTATION/////////////////////////
-
-    MERCURYANGLE -= convertDegrees_Radians(
-      MERCURYORBITRATING * SIMULATION_SPEED_ORBIT
-    );
-    VENUSANGLE -= convertDegrees_Radians(
-      VENUSORBITRATING * SIMULATION_SPEED_ORBIT
-    );
-    EARTHANGLE -= convertDegrees_Radians(
-      EARTHORBITRATING * SIMULATION_SPEED_ORBIT
-    );
-    MOONANGLE -= convertDegrees_Radians(
-      MOONORBITINGRATING * SIMULATION_SPEED_ORBIT
-    );
-    MARSANGLE -= convertDegrees_Radians(
-      MARSORBITRATING * SIMULATION_SPEED_ORBIT
-    );
-
-    JUPYTERANGLE -= convertDegrees_Radians(
-      JUPYTERORBITING * SIMULATION_SPEED_ORBIT
-    );
-
-    SATURNANGLE -= convertDegrees_Radians(
-      SATURNORBITINGRATING * SIMULATION_SPEED_ORBIT
-    );
-
-    URANUSANGLE -= convertDegrees_Radians(
-      URANUSORBITINGRATING * SIMULATION_SPEED_ORBIT
-    );
-
-    NEPTUNOANGLE -= convertDegrees_Radians(
-      NEPTUNOORBITINGRATING * SIMULATION_SPEED_ORBIT
-    );
-
+  function planetRotation() {
     ///////////////////////ROTATION///////////////////////////////////////
     sunMesh.rotation.y += convertDegrees_Radians(
       16 * SIMULATION_SPEED_ROTATION
     );
+
     mercuryMesh.rotation.y += convertDegrees_Radians(
       MERCURYORBITRATING * SIMULATION_SPEED_ROTATION
     );
@@ -855,7 +719,11 @@ function MAIN() {
     //r = reset camera position
     // console.log(controls);
     controls.reset();
-    camera.position.set(-35, 38, -55);
+    camera.position.set(
+      cameraResetPosition[0],
+      cameraResetPosition[1],
+      cameraResetPosition[2]
+    );
     SIMULATION_SPEED_ORBIT = dataControls.Orbit_Speed;
   }
 
@@ -871,10 +739,12 @@ function MAIN() {
       }
     } else if (evt.keyCode === 80) {
       //tecla p
-      if (SIMULATION_SPEED_ORBIT === 0.0) {
+      if (SCALING_TIME === 0) {
         SIMULATION_SPEED_ORBIT = dataControls.Orbit_Speed;
+        SCALING_TIME = dataControls.Orbit_Speed;
       } else {
         SIMULATION_SPEED_ORBIT = 0.0;
+        SCALING_TIME = 0;
       }
     } else if (evt.keyCode === 82) {
       //r = reset camera position
@@ -929,16 +799,27 @@ function MAIN() {
     } else if (evt.keyCode === 69) {
       //tecla e
 
-      camera.position.x = earthMesh.position.x + 10;
-      camera.position.y = 10;
-      camera.position.z = earthMesh.position.z;
-      camera.lookAt(earthMesh.position);
+      camera.lookAt(
+        earthMesh.position.x + 1350000,
+        215000,
+        earthMesh.position.z + 50000
+      );
+      camera.position.set(
+        earthMesh.position.x + 2000000,
+        215000,
+        earthMesh.position.z + 50000
+      );
+      controls.target.set(
+        earthMesh.position.x + 1350000,
+        215000,
+        earthMesh.position.z + 50000
+      );
 
-      SIMULATION_SPEED_ORBIT = dataControls.Orbit_Speed;
+      SCALING_TIME = dataControls.Orbit_Speed;
     } else if (evt.keyCode === 188) {
-      SIMULATION_SPEED_ORBIT -= dataControls.Orbit_Speed;
+      SCALING_TIME -= dataControls.Orbit_Speed;
     } else if (evt.keyCode === 190) {
-      SIMULATION_SPEED_ORBIT += dataControls.Orbit_Speed;
+      SCALING_TIME += dataControls.Orbit_Speed;
     }
   }
 
@@ -1016,14 +897,14 @@ function MAIN() {
 
   function createSpeedMenu() {
     let dataLighting = {
-      Ambient_Light: 0.4,
-      Sun_Light: 14,
+      Ambient_Light: 0.02,
+      Sun_Light: SunLight.intensity,
     };
     let visibleObjects = {
       Orbit_path: true,
     };
     let objectsHelper = {
-      axisHelper: true,
+      axisHelper: false,
     };
 
     var actions = new (function () {
@@ -1043,7 +924,7 @@ function MAIN() {
         SIMULATION_SPEED_ROTATION = value;
       });
     folderSpeed
-      .add(dataControls, "Orbit_Speed", 0, 40000)
+      .add(dataControls, "Orbit_Speed", 0, 4000000)
       .onChange(function (value) {
         // SIMULATION_SPEED_ORBIT = value;
         SCALING_TIME = value;
@@ -1062,16 +943,17 @@ function MAIN() {
 
     var folderSpeedLighting = gui.addFolder("Lighting settings");
     folderSpeedLighting
-      .add(dataLighting, "Ambient_Light", 0, 1)
+      .add(dataLighting, "Ambient_Light", 0, 2)
       .onChange(function (value) {
         ambientLight.intensity = value;
       });
 
     var folderSpeedSunLighting = gui.addFolder("Sun Light settings");
     folderSpeedSunLighting
-      .add(dataLighting, "Sun_Light", 1, 24)
+      .add(dataLighting, "Sun_Light", 1, 7)
       .onChange(function (value) {
-        light.power = value * 1000 * 4 * Math.PI;
+        // light.power = value * 1000 * 4 * Math.PI;
+        light.power = value * 4 * Math.PI;
       });
 
     var folderVisibleObjects = gui.addFolder("Objects settings");
@@ -1099,6 +981,7 @@ function MAIN() {
         }
       });
 
+    //X - RED  Y - GREEN  Z - BLUE
     var folderObjectsHelper = gui.addFolder("Objects Helper");
     folderObjectsHelper
       .add(objectsHelper, "axisHelper")
@@ -1117,14 +1000,23 @@ function MAIN() {
     folderObjectsHelper.close();
   }
 
+  function onMouseDown(event) {
+    // calculate mouse position in normalized device coordinates
+    // (-1 to +1) for both components
+
+    event.preventDefault();
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    blockRun = false;
+  }
+  window.addEventListener("mousedown", onMouseDown);
+
   // call the init function to set everything up
   init();
 }
 
 try {
-  //window.onload = function () {
   MAIN();
-  //};
 } catch (e) {
   console.log(e);
 }
