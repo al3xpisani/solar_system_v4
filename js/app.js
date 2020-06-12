@@ -25,6 +25,9 @@ var Mercury, Venus, Earth, Moon, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto;
 var planets = [];
 var orbit_outlines = new THREE.Object3D();
 
+var raycaster = new THREE.Raycaster();
+var mouse = new THREE.Vector2();
+
 function MAIN() {
   manager = new LoadingManager().setLoadManager("loadbar", "loadpg");
 
@@ -48,6 +51,7 @@ function MAIN() {
   let scene;
   let textureLoader;
   let showSpriteText = true;
+  let blockRun = true;
 
   let sunMesh,
     earthMesh,
@@ -587,8 +591,9 @@ function MAIN() {
     scene.add(mercuryMesh);
     earthMesh.add(moonMesh);
     earth_group_orbit.add(earthMesh);
-    scene.add(earth_group_orbit);
-
+    earth_group_orbit.name = "EARTH";
+    // scene.add(earth_group_orbit);
+    scene.add(earthMesh);
     scene.add(marsMesh);
     scene.add(jupyterMesh);
     scene.add(saturnMesh);
@@ -603,11 +608,31 @@ function MAIN() {
 
   function update() {
     if (SCALING_TIME !== 0) {
-      play();
+      playPlanet();
+      getPlanetClick(scene);
     }
   }
 
-  function play() {
+  function getPlanetClick(sceneObject) {
+    raycaster.setFromCamera(mouse, camera);
+    var intersects = raycaster.intersectObjects(sceneObject.children);
+    //
+    if (!blockRun) {
+      if (intersects.length > 0) {
+        alert(intersects[0].object.name);
+      } else {
+        try {
+          var intersects1 = raycaster.intersectObjects(earthMesh.children);
+          alert(intersects1[0].object.name);
+        } catch (e) {
+          //If user clicks on space do nothing - intersects1 array get index OOR
+        }
+      }
+    }
+    blockRun = true;
+  }
+
+  function playPlanet() {
     AdjustPlanetLocation(mercuryMesh, planets[0]);
 
     AdjustPlanetLocation(venusMesh, planets[1]);
@@ -975,14 +1000,23 @@ function MAIN() {
     folderObjectsHelper.close();
   }
 
+  function onMouseDown(event) {
+    // calculate mouse position in normalized device coordinates
+    // (-1 to +1) for both components
+
+    event.preventDefault();
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    blockRun = false;
+  }
+  window.addEventListener("mousedown", onMouseDown);
+
   // call the init function to set everything up
   init();
 }
 
 try {
-  //window.onload = function () {
   MAIN();
-  //};
 } catch (e) {
   console.log(e);
 }

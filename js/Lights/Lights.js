@@ -42,7 +42,7 @@ var Lights = function (scene) {
 
     //shadow.camera.fov and rotation shows the shadow.
     // light2.shadow.camera.fov = -270;
-    light2.rotation.set(0, Math.PI, 0);
+    // light2.rotation.set(0, Math.PI, 0);
 
     // h — matiz value between 0.0 and 1.0
     // s — saturation value between 0.0 and 1.0
