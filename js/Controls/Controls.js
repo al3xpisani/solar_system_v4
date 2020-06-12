@@ -6,7 +6,8 @@ var Controls = function createControls(
   enableRotate,
   autoRotate,
   cameraPan,
-  rotateSpeed
+  rotateSpeed,
+  zoomSpeed
 ) {
   var controls = new THREE.OrbitControls(camera, container);
 
@@ -14,6 +15,7 @@ var Controls = function createControls(
   controls.autoRotate = autoRotate;
   controls.cameraPan = cameraPan;
   controls.rotateSpeed = rotateSpeed;
+  controls.zoomspeed = zoomSpeed;
 
   controls.minDistance = minDistance;
   controls.maxDistance = maxDistance; //3500 antes

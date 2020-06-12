@@ -139,7 +139,8 @@ function MAIN() {
       true,
       false,
       true,
-      1.0
+      1.0,
+      40
     );
 
     ambientLight = new Lights(scene).ambientLight(0xffffff, 0.4);
