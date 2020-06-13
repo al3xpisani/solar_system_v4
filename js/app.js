@@ -593,14 +593,10 @@ function MAIN() {
     AdjustPlanetLocation(jupyterMesh, planets[5]);
 
     AdjustPlanetLocation(saturnMesh, planets[6]);
-    saturnRingMesh.position.x = saturnMesh.position.x;
-    saturnRingMesh.position.y = saturnMesh.position.y;
-    saturnRingMesh.position.z = saturnMesh.position.z;
+    saturnRingMesh.position.copy(saturnMesh.position);
 
     AdjustPlanetLocation(uranusMesh, planets[7]);
-    uranusRingMesh.position.x = uranusMesh.position.x;
-    uranusRingMesh.position.y = uranusMesh.position.y;
-    uranusRingMesh.position.z = uranusMesh.position.z;
+    uranusRingMesh.position.copy(uranusMesh.position);
 
     AdjustPlanetLocation(neptunoMesh, planets[8]);
     AdjustPlanetLocation(plutoMesh, planets[9]);
@@ -611,40 +607,22 @@ function MAIN() {
   // perform any updates to the scene, called once per frame
   // avoid heavy computation here
   function planetRotation() {
-    ///////////////////////ROTATION///////////////////////////////////////
-    sunMesh.rotation.y += convertDegrees_Radians(
-      16 * SIMULATION_SPEED_ROTATION
-    );
+    setRotation(sunMesh, 16);
+    setRotation(mercuryMesh, MERCURYORBITRATING);
+    setRotation(venusMesh, VENUSORBITRATING);
+    setRotation(earthMesh, EARTHORBITRATING);
+    setRotation(moonMesh, MOONORBITINGRATING);
+    setRotation(marsMesh, MARSORBITRATING);
+    setRotation(jupyterMesh, JUPYTERORBITING);
+    setRotation(saturnMesh, SATURNORBITINGRATING);
+    setRotation(uranusMesh, URANUSORBITINGRATING);
+    setRotation(neptunoMesh, NEPTUNOORBITINGRATING);
+  }
 
-    mercuryMesh.rotation.y += convertDegrees_Radians(
-      MERCURYORBITRATING * SIMULATION_SPEED_ROTATION
+  function setRotation(meshPlan, orbitRate) {
+    meshPlan.rotation.y += convertDegrees_Radians(
+      orbitRate * SIMULATION_SPEED_ROTATION
     );
-    venusMesh.rotation.y += convertDegrees_Radians(
-      VENUSORBITRATING * SIMULATION_SPEED_ROTATION
-    );
-    earthMesh.rotation.y += convertDegrees_Radians(
-      EARTHORBITRATING * SIMULATION_SPEED_ROTATION
-    );
-    moonMesh.rotation.y += convertDegrees_Radians(
-      MOONORBITINGRATING * SIMULATION_SPEED_ROTATION
-    );
-    marsMesh.rotation.y += convertDegrees_Radians(
-      MARSORBITRATING * SIMULATION_SPEED_ROTATION
-    );
-    jupyterMesh.rotation.y += convertDegrees_Radians(
-      JUPYTERORBITING * SIMULATION_SPEED_ROTATION
-    );
-    saturnMesh.rotation.y += convertDegrees_Radians(
-      SATURNORBITINGRATING * SIMULATION_SPEED_ROTATION
-    );
-    uranusMesh.rotation.y += convertDegrees_Radians(
-      URANUSORBITINGRATING * SIMULATION_SPEED_ROTATION
-    );
-    neptunoMesh.rotation.y += convertDegrees_Radians(
-      NEPTUNOORBITINGRATING * SIMULATION_SPEED_ROTATION
-    );
-
-    ////////////////////////////////////////////////////////////////////
   }
 
   // render, or 'draw a still image', of the scene
@@ -866,8 +844,6 @@ function MAIN() {
 
     var gui = new dat.GUI();
 
-    //gui.remember(dataControls);
-
     var folderSpeed = gui.addFolder("Speed settings");
     folderSpeed
       .add(dataControls, "Rotation_Speed", 0, 3)
@@ -912,23 +888,27 @@ function MAIN() {
       .add(visibleObjects, "Orbit_path")
       .onChange(function (value) {
         if (value) {
-          scene.add(venusOrbitPathMesh);
-          scene.add(mercuryoOrbitPathMesh);
-          scene.add(earthOrbitPathMesh);
-          scene.add(marsOrbitPathMesh);
-          scene.add(jupyterOrbitPathMesh);
-          scene.add(saturnOrbitPathMesh);
-          scene.add(uranusOrbitPathMesh);
-          scene.add(neptunoOrbitPathMesh);
+          scene.add(
+            venusOrbitPathMesh,
+            mercuryoOrbitPathMesh,
+            earthOrbitPathMesh,
+            marsOrbitPathMesh,
+            jupyterOrbitPathMesh,
+            saturnOrbitPathMesh,
+            uranusOrbitPathMesh,
+            neptunoOrbitPathMesh
+          );
         } else {
-          scene.remove(venusOrbitPathMesh);
-          scene.remove(mercuryoOrbitPathMesh);
-          scene.remove(earthOrbitPathMesh);
-          scene.remove(marsOrbitPathMesh);
-          scene.remove(jupyterOrbitPathMesh);
-          scene.remove(saturnOrbitPathMesh);
-          scene.remove(uranusOrbitPathMesh);
-          scene.remove(neptunoOrbitPathMesh);
+          scene.remove(
+            venusOrbitPathMesh,
+            mercuryoOrbitPathMesh,
+            earthOrbitPathMesh,
+            marsOrbitPathMesh,
+            jupyterOrbitPathMesh,
+            saturnOrbitPathMesh,
+            uranusOrbitPathMesh,
+            neptunoOrbitPathMesh
+          );
         }
       });
 
