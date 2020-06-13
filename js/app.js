@@ -70,14 +70,14 @@ function MAIN() {
 
   var skybox_group = new THREE.Object3D();
 
-  let mercuryoOrbitPathMesh;
-  let venusOrbitPathMesh;
-  let earthOrbitPathMesh;
-  let marsOrbitPathMesh;
-  let jupyterOrbitPathMesh;
-  let saturnOrbitPathMesh;
-  let uranusOrbitPathMesh;
-  let neptunoOrbitPathMesh;
+  let mercuryoOrbitPathMesh,
+    venusOrbitPathMesh,
+    earthOrbitPathMesh,
+    marsOrbitPathMesh,
+    jupyterOrbitPathMesh,
+    saturnOrbitPathMesh,
+    uranusOrbitPathMesh,
+    neptunoOrbitPathMesh;
 
   let ambientLight;
   var axesHelper;
@@ -90,7 +90,6 @@ function MAIN() {
 
   var SIMULATION_SPEED_ROTATION = 0.05;
   const REALLITYSCALEFACTOR_RADIUS = 38;
-  ///////////////////////////////////////
 
   const SATURN_SCALE_REF_SUN = 0.083621742;
   const URANUS_SCALE_REF_SUN = 0.03642134;
