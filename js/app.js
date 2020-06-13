@@ -98,16 +98,6 @@ function MAIN() {
   const SUN_INIT_POS_Y = 0;
   const SUN_INIT_POS_Z = 0;
 
-  const EARTHORBITRATING = 1.0; //#Período Orbital : 360/365,256363004 = 0.999298   (Almost 1 degree per day)
-  const MOONORBITINGRATING = 13.0; //#Período Orbital Lua : 27. 360/27
-  const MERCURYORBITRATING = 4.09; //# Mercury orbits the Sun about 3.7 degree per day. it takes about 88 solar days to orbit the sun  360/88 = 4.090909
-  const VENUSORBITRATING = 1.6; //# 225 dias solares. 360/225
-  const MARSORBITRATING = 0.52; //#687 solar days
-  const JUPYTERORBITING = 0.08; //12 anos (12*365 = 4380dias) 360/4380 = 0.08219
-  const SATURNORBITINGRATING = 0.03; //360 / 29ANOS(10585)
-  const URANUSORBITINGRATING = 0.01; //360 / 84ANOS(30660)
-  const NEPTUNOORBITINGRATING = 0.006; //360 / 165ANOS(60225)
-
   let saturnRadius = SATURN_SCALE_REF_SUN * REALLITYSCALEFACTOR_RADIUS; //idem acima
   let uranusRadius = URANUS_SCALE_REF_SUN * REALLITYSCALEFACTOR_RADIUS;
 
@@ -607,15 +597,15 @@ function MAIN() {
   // avoid heavy computation here
   function planetRotation() {
     setRotation(sunMesh, 16);
-    setRotation(mercuryMesh, MERCURYORBITRATING);
-    setRotation(venusMesh, VENUSORBITRATING);
-    setRotation(earthMesh, EARTHORBITRATING);
-    setRotation(moonMesh, MOONORBITINGRATING);
-    setRotation(marsMesh, MARSORBITRATING);
-    setRotation(jupyterMesh, JUPYTERORBITING);
-    setRotation(saturnMesh, SATURNORBITINGRATING);
-    setRotation(uranusMesh, URANUSORBITINGRATING);
-    setRotation(neptunoMesh, NEPTUNOORBITINGRATING);
+    setRotation(mercuryMesh, Mercury_Info.MERCURYORBITRATING);
+    setRotation(venusMesh, Venus_Info.VENUSORBITRATING);
+    setRotation(earthMesh, Earth_Info.EARTHORBITRATING);
+    setRotation(moonMesh, Moon_Info.MOONORBITINGRATING);
+    setRotation(marsMesh, Mars_Info.MARSORBITRATING);
+    setRotation(jupyterMesh, Jupiter_Info.JUPYTERORBITING);
+    setRotation(saturnMesh, Saturn_Info.SATURNORBITINGRATING);
+    setRotation(uranusMesh, Uranus_Info.URANUSORBITINGRATING);
+    setRotation(neptunoMesh, Neptune_Info.NEPTUNOORBITINGRATING);
   }
 
   function setRotation(meshPlan, orbitRate) {
