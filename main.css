@@ -72,6 +72,7 @@ body {
   margin: 0;
   padding: 10px;
   opacity: 0;
+  z-index: 1000;
 }
 
 #formattedHelpText {
@@ -86,18 +87,22 @@ body {
 
 #mouseHelpDescription {
   float: left;
+  width: 40%;
   height: 90%;
   margin-right: 40px;
   margin-left: 40px;
   margin-bottom: 20px;
+  margin-top: 20px;
 }
 
 #keyboardHelpDescription {
   float: left;
   height: 0;
+  width: 30%;
   margin-right: 40px;
   margin-left: 40px;
   margin-bottom: 20px;
+  margin-top: 20px;
 }
 
 #loadingScene {
@@ -115,4 +120,15 @@ body {
   text-align: center;
   vertical-align: middle;
   line-height: calc(100vh);
+}
+
+.datetimepicker {
+  display: inline-flex;
+  align-items: center;
+  background-color: #fff;
+  border: 4px solid black;
+  border-radius: 8px;
+  margin-top: 10px;
+  padding-top: 5px;
+  padding-bottom: 5px;
 }

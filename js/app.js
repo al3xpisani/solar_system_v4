@@ -4,6 +4,7 @@ import { Controls } from "./Controls/Controls.js";
 import { Lights } from "./Lights/Lights.js";
 import { Renderer } from "./Renderer/Renderer.js";
 import { SkyDome } from "./skyDome/SkyDome.js";
+
 import {
   Paths,
   PlanetsURL,
@@ -31,7 +32,21 @@ var mouse = new THREE.Vector2();
 function MAIN() {
   manager = new LoadingManager().setLoadManager("loadbar", "loadpg");
 
+  // var timepicker = new TimePicker("time", {
+  //   lang: "en",
+  //   theme: "dark",
+  // });
+  // timepicker.on("change", function (evt) {
+  //   var value = (evt.hour || "00") + ":" + (evt.minute || "00");
+  //   evt.element.value = value;
+  // });
+
   // these need to be accessed inside more than one function so we'll declare them first
+  var datFut = document.getElementById("timeFuture");
+  // console.log(GetFormattedNowDateToInputFormat());
+
+  datFut.value = null;
+
   let container = document.querySelector("#scene-container");
 
   let containerHelp = document.querySelector("#scene-containerHelp");
@@ -88,6 +103,7 @@ function MAIN() {
     Stop_Animation: false,
   };
 
+  var SIMULATION_SPEED_ORBIT;
   var SIMULATION_SPEED_ROTATION = 0.05;
   const REALLITYSCALEFACTOR_RADIUS = 38;
 

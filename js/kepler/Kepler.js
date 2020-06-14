@@ -1,3 +1,103 @@
+class ClockFutureDate {
+  constructor(autoStart) {
+    this.autoStart = autoStart !== undefined ? autoStart : true;
+    this.startTime = 0;
+    this.oldTime = 0;
+    this.elapsedTime = 0;
+    this.running = false;
+  }
+  start() {
+    this.startTime = (typeof performance === "undefined"
+      ? Date
+      : performance
+    ).now(); // see #10732
+    this.oldTime = this.startTime;
+    this.elapsedTime = 0;
+    this.running = true;
+  }
+
+  stop() {
+    this.getElapsedTime();
+    this.running = false;
+    this.autoStart = false;
+  }
+
+  getElapsedTime(futureDate) {
+    this.getDelta(futureDate);
+    return this.elapsedTime;
+  }
+
+  getDelta(futureDate) {
+    var diff = 0;
+
+    if (this.autoStart && !this.running) {
+      this.start();
+      return 0;
+    }
+    if (this.running) {
+      var newTime;
+
+      newTime = (typeof performance === "undefined" ? Date : performance).now();
+      // console.log("newTime", newTime);
+      if (Number.isNaN(futureDate) !== Number.isNaN(NaN)) {
+        newTime += futureDate;
+      }
+      // console.log("FutuDate", futureDate);
+      diff = (newTime - this.oldTime) / 1000;
+
+      this.oldTime = newTime;
+      this.elapsedTime += diff;
+    }
+    // console.log(newTime);
+    return diff;
+  }
+}
+
+function GetFormattedNowDate() {
+  var todayTime = new Date();
+
+  var month = todayTime.getMonth() + 1;
+  var day = todayTime.getDate();
+  var year = todayTime.getFullYear();
+  // return month + "/" + day + "/" + year;
+  return year + "/" + month + "/" + day;
+}
+
+function GetFormattedNowDateToInputFormat() {
+  var todayTime = new Date();
+
+  var month = todayTime.getMonth() + 1;
+  var day = todayTime.getDate();
+  var year = todayTime.getFullYear();
+
+  return String(
+    year +
+      "-" +
+      String(month).padStart(2, "0") +
+      "-" +
+      String(day).padStart(2, "0")
+  );
+}
+
+function parseDate(str) {
+  // var mdy = str.replaceAll("-", "/").split("/"); did not work on chrome
+
+  var mdy = str.replace(/-/gi, "/").split("/");
+  // return new Date(mdy[2], mdy[0] - 1, mdy[1]);
+  return new Date(mdy[0], mdy[1] - 1, mdy[2]);
+}
+
+function datediff(first, second) {
+  // Take the difference between the dates and divide by milliseconds per day.
+  // Round to nearest whole number to deal with DST.
+  // return Math.round((second - first) / (1000 * 60 * 60 * 24));
+  // console.log("second", second);
+  // console.log("first", first);
+  // console.log(Math.abs(second - first));
+  //return in milliseconds
+  return Math.abs(second - first);
+}
+
 // Defines functions to solve
 //
 //  Keplers first, second, and third laws.
@@ -5,7 +105,8 @@
 // Credit for a lot of these go to Marc. A. Murison of US Naval Observatory, Washington, DC
 // Link: http://murison.alpheratz.net/dynamics/twobody/KeplerIterations_summary.pdf
 //
-var clock = new THREE.Clock();
+// var clock = new THREE.Clock();
+var clockFutureDate = new ClockFutureDate();
 
 var SCALING_TIME = 0.1; // Set by GUI
 const SET_SCALING_TIME = 1; //Equalizer as physics has a tendency to run a bit fast.
@@ -21,10 +122,30 @@ function CalculateN(semimajor_axis, central_mass) {
       ));
   return Orbital_Period;
 }
-
 // Uses Three.js clock. Substitute Clock.getElapsedTime with whatever your chosen timing engine is!
 function CalculateMT(n, t) {
-  var Mt = n * clock.getElapsedTime() * SCALING_TIME * SET_SCALING_TIME;
+  // var daysAhead = datediff(
+  //   parseDate(GetFormattedNowDate()),
+  //   parseDate("6/13/2025")
+  // );
+  var daysAheadMS;
+
+  // console.log(document.getElementById("timeFuture").value);
+  // console.log(parseDate(document.getElementById("timeFuture").value));
+  // console.log(parseDate(GetFormattedNowDate()));
+
+  if (document.getElementById("timeFuture").value !== null) {
+    daysAheadMS = datediff(
+      parseDate(GetFormattedNowDate()),
+      parseDate(document.getElementById("timeFuture").value)
+    );
+  }
+
+  var Mt =
+    n *
+    clockFutureDate.getElapsedTime(daysAheadMS) *
+    SCALING_TIME *
+    SET_SCALING_TIME;
   return Mt;
 }
 
