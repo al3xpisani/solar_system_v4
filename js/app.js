@@ -26,26 +26,18 @@ var Mercury, Venus, Earth, Moon, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto;
 var planets = [];
 var orbit_outlines = new THREE.Object3D();
 
+var gui = new dat.GUI();
+
 var raycaster = new THREE.Raycaster();
 var mouse = new THREE.Vector2();
+var datFuture = null;
 
 function MAIN() {
   manager = new LoadingManager().setLoadManager("loadbar", "loadpg");
 
-  // var timepicker = new TimePicker("time", {
-  //   lang: "en",
-  //   theme: "dark",
-  // });
-  // timepicker.on("change", function (evt) {
-  //   var value = (evt.hour || "00") + ":" + (evt.minute || "00");
-  //   evt.element.value = value;
-  // });
-
   // these need to be accessed inside more than one function so we'll declare them first
-  var datFut = document.getElementById("timeFuture");
-  // console.log(GetFormattedNowDateToInputFormat());
-
-  datFut.value = null;
+  datFuture = document.getElementById("timeFuture");
+  datFuture.value = null;
 
   let container = document.querySelector("#scene-container");
 
@@ -768,11 +760,30 @@ function MAIN() {
 
   function onformattedHelpOut() {}
 
+  function onSetDefaultOrbit() {
+    dataControls.Orbit_Speed = 22000;
+    // SIMULATION_SPEED_ORBIT = dataControls.Orbit_Speed;
+    SCALING_TIME = dataControls.Orbit_Speed;
+    changedDate_Kepler = true;
+
+    //update all dat.gui folders (Menu) or add .listen on .add(xxxxx).listen()
+    // for (var i = 0; i < Object.keys(gui.__folders).length; i++) {
+    //   var key = Object.keys(gui.__folders)[i];
+    //   for (var j = 0; j < gui.__folders[key].__controllers.length; j++) {
+    //     gui.__folders[key].__controllers[j].updateDisplay();
+    //   }
+    // }
+  }
+
   window.addEventListener("resize", onWindowResize);
   window.addEventListener("keydown", onKeyDown);
 
   divHelpID.addEventListener("mouseover", onMouseHelpIconOver, false);
   canvasHelp.addEventListener("mouseout", onMouseHelpIconOut, false);
+
+  document
+    .getElementById("timeFuture")
+    .addEventListener("change", onSetDefaultOrbit);
 
   document
     .getElementById("formattedHelpText")
@@ -847,8 +858,6 @@ function MAIN() {
       };
     })();
 
-    var gui = new dat.GUI();
-
     var folderSpeed = gui.addFolder("Speed settings");
     folderSpeed
       .add(dataControls, "Rotation_Speed", 0, 3)
@@ -857,6 +866,7 @@ function MAIN() {
       });
     folderSpeed
       .add(dataControls, "Orbit_Speed", 0, 4000000)
+      .listen()
       .onChange(function (value) {
         // SIMULATION_SPEED_ORBIT = value;
         SCALING_TIME = value;

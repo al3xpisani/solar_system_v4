@@ -38,13 +38,12 @@ class ClockFutureDate {
       var newTime;
 
       newTime = (typeof performance === "undefined" ? Date : performance).now();
-      // console.log("newTime", newTime);
+      // console.log("newTime", Date.now());
       if (Number.isNaN(futureDate) !== Number.isNaN(NaN)) {
         newTime += futureDate;
       }
       // console.log("FutuDate", futureDate);
       diff = (newTime - this.oldTime) / 1000;
-
       this.oldTime = newTime;
       this.elapsedTime += diff;
     }
@@ -107,6 +106,7 @@ function datediff(first, second) {
 //
 // var clock = new THREE.Clock();
 var clockFutureDate = new ClockFutureDate();
+var changedDate_Kepler = false;
 
 var SCALING_TIME = 0.1; // Set by GUI
 const SET_SCALING_TIME = 1; //Equalizer as physics has a tendency to run a bit fast.
@@ -124,21 +124,36 @@ function CalculateN(semimajor_axis, central_mass) {
 }
 // Uses Three.js clock. Substitute Clock.getElapsedTime with whatever your chosen timing engine is!
 function CalculateMT(n, t) {
-  // var daysAhead = datediff(
-  //   parseDate(GetFormattedNowDate()),
-  //   parseDate("6/13/2025")
-  // );
-  var daysAheadMS;
+  var daysAheadMS = NaN;
 
+  // 2027-06-17
   // console.log(document.getElementById("timeFuture").value);
   // console.log(parseDate(document.getElementById("timeFuture").value));
   // console.log(parseDate(GetFormattedNowDate()));
 
-  if (document.getElementById("timeFuture").value !== null) {
-    daysAheadMS = datediff(
-      parseDate(GetFormattedNowDate()),
-      parseDate(document.getElementById("timeFuture").value)
-    );
+  if (document.getElementById("timeFuture").value !== "") {
+    if (changedDate_Kepler) {
+      clockFutureDate = new ClockFutureDate();
+      changedDate_Kepler = false;
+    }
+
+    var dtNow = [
+      moment().format("YYYY"),
+      moment().format("MM"),
+      moment().format("DD"),
+    ];
+
+    var dtFuture = document
+      .getElementById("timeFuture")
+      .value.replace(/-/gi, "/")
+      .split("/");
+    dtFuture = [dtFuture[0], dtFuture[1], dtFuture[2]];
+    daysAheadMS = moment(dtFuture).diff(dtNow);
+
+    // daysAheadMS = datediff(
+    //   parseDate(GetFormattedNowDate()),
+    //   parseDate(document.getElementById("timeFuture").value)
+    // );
   }
 
   var Mt =
