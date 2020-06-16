@@ -186,6 +186,9 @@ function MAIN() {
     Neptune = new Planet_Gen(Neptune_Info, neptunoMesh, showSpriteText);
     Pluto = new Planet_Gen(Pluto_Info, plutoMesh, showSpriteText);
 
+    //set planets caption invisible
+    //Mercury.parent_group.children[0].visible = false;
+
     //sets Orbital path line
     planets = [
       Mercury,
@@ -761,9 +764,8 @@ function MAIN() {
   function onformattedHelpOut() {}
 
   function onSetDefaultOrbit() {
-    dataControls.Orbit_Speed = 22000;
-    // SIMULATION_SPEED_ORBIT = dataControls.Orbit_Speed;
-    SCALING_TIME = dataControls.Orbit_Speed;
+    dataControls.Orbit_Speed = 1; //dataControls.Orbit_Speed;
+    SCALING_TIME = 1; //dataControls.Orbit_Speed;
     changedDate_Kepler = true;
 
     //update all dat.gui folders (Menu) or add .listen on .add(xxxxx).listen()
