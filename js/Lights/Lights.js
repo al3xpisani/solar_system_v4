@@ -88,7 +88,7 @@ var Lights = function (scene) {
     );
     lensflare.position.set(lightPositionX, lightPositionY, lightPositionZ);
 
-    light2.add(lensflare);
+    // light2.add(lensflare);
 
     scene.add(light2);
 
